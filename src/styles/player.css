@@ -1,0 +1,159 @@
+/* ═══════════════════════════════════════════════════════════
+   Plyr Player Theme Overrides
+   https://github.com/sampotts/plyr
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Base Controls Bar ── */
+.vds-plyr-controls {
+  padding: 0 10px 8px 10px !important;
+  gap: 6px !important;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85)) !important;
+}
+
+/* ── Individual Buttons ── */
+.vds-plyr-controls button,
+.vds-plyr-controls .vds-button {
+  color: rgba(255, 255, 255, 0.85) !important;
+  border-radius: 8px !important;
+  transition: color 0.15s ease, background-color 0.15s ease, transform 0.1s ease !important;
+}
+.vds-plyr-controls button:hover,
+.vds-plyr-controls .vds-button:hover {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+.vds-plyr-controls button:active {
+  transform: scale(0.92) !important;
+}
+
+/* ── Time Display ── */
+.vds-plyr-controls .vds-time,
+.vds-plyr-controls time {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-variant-numeric: tabular-nums !important;
+  letter-spacing: -0.02em !important;
+}
+
+/* ── Time / Progress Slider ── */
+.vds-plyr-controls .vds-slider {
+  height: 4px !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+}
+.vds-plyr-controls .vds-slider-fill {
+  background: #ff0000 !important;
+  border-radius: 4px !important;
+}
+.vds-plyr-controls .vds-slider-track {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-radius: 4px !important;
+}
+.vds-plyr-controls .vds-slider:hover {
+  height: 6px !important;
+}
+
+/* ── Volume Slider ── */
+.vds-plyr-controls .vds-volume-slider {
+  width: 80px !important;
+}
+
+/* ── Play Large Button (center overlay) ── */
+.vds-plyr-controls .vds-play-large {
+  opacity: 0 !important;
+  transition: opacity 0.2s ease !important;
+}
+.vds-plyr-controls .vds-play-large:where(:hover, :focus) {
+  opacity: 1 !important;
+}
+
+/* ── Settings Menu ── */
+.vds-plyr-controls .vds-menu-items,
+.vds-plyr-controls .vds-menu {
+  background: rgba(28, 28, 28, 0.97) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+}
+.vds-plyr-controls .vds-menu-items .vds-menu-item {
+  color: rgba(255, 255, 255, 0.85) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  transition: background-color 0.12s ease !important;
+}
+.vds-plyr-controls .vds-menu-items .vds-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+.vds-plyr-controls .vds-menu-items .vds-menu-item[data-checked] {
+  color: #ff4444 !important;
+}
+.vds-plyr-controls .vds-menu-items .vds-menu-item[data-checked]::before {
+  background: #ff4444 !important;
+}
+
+/* ── Settings Label / Header ── */
+.vds-plyr-controls .vds-menu-heading {
+  color: rgba(255, 255, 255, 0.5) !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+}
+
+/* ── Separator ── */
+.vds-plyr-controls .vds-menu-items hr,
+.vds-plyr-controls .vds-hr {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  margin: 4px 0 !important;
+}
+
+/* ── Tooltip ── */
+.vds-tooltip-content {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  background: rgba(0, 0, 0, 0.9) !important;
+  color: #fff !important;
+  padding: 4px 8px !important;
+  pointer-events: none !important;
+}
+
+/* ── Buffering Spinner ── */
+.vds-buffering-indicator {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  border-top-color: #ff0000 !important;
+}
+
+/* ── Captions ── */
+.vds-captions {
+  font-size: 16px !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* ── Poster ── */
+.vds-poster {
+  border-radius: 0 !important;
+}
+
+/* ── Fullscreen adjustments ── */
+:fullscreen .vds-plyr-controls,
+:-webkit-full-screen .vds-plyr-controls {
+  padding: 0 16px 16px 16px !important;
+}
+
+/* ── Controls auto-hide smooth ── */
+.vds-player:not(:where(:hover, :focus-within)) .vds-plyr-controls {
+  opacity: 0 !important;
+  transition: opacity 0.3s ease !important;
+}
+.vds-player:where(:hover, :focus-within) .vds-plyr-controls {
+  opacity: 1 !important;
+  transition: opacity 0.3s ease !important;
+}
