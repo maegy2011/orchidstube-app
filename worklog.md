@@ -1348,3 +1348,26 @@ Stage Summary:
 - Eliminated dependency on external `ui-avatars.com` service
 - ESLint: 0 errors
 - Dev server: compiles successfully
+---
+Task ID: 11
+Agent: Main Agent
+Task: Use homepage method to get channel image on watch page
+
+Work Log:
+- Analyzed homepage channel avatar flow: `fallbackSearch()` → `ytube-noapi` (priority #0) provides real `channelThumbnail` URLs
+- Analyzed watch page channel avatar flow: `getVideoDetails()` → `ytube-noapi` is priority #4 (last), so if `youtube-sr` succeeds first with a broken avatar, `ytube-noapi` is never tried
+- Identified the gap: `youtube-sr` (#1) and `yt-search` (#2) often return empty/broken avatar URLs, and the function returns early without trying `ytube-noapi`
+- Added `supplementChannelAvatar()` helper function in `youtube-details.ts`:
+  - Checks if current avatar is empty or too short (< 10 chars)
+  - If missing, calls `ytube-noapi.getVideo(videoId)` specifically to get `channelThumbnail`
+  - Same method the homepage uses (ytube-noapi is the homepage's primary avatar source)
+  - Silent failure — keeps whatever avatar we already had if supplement fails
+- Updated all 5 provider branches in `getVideoDetails()` to call `supplementChannelAvatar()` before returning
+
+Stage Summary:
+- 1 file modified: `src/lib/youtube-details.ts`
+- Watch page now uses the same channel image source as homepage (ytube-noapi)
+- `supplementChannelAvatar()` only fires when the primary provider has a missing/broken avatar
+- Providers with good avatars (youtube-sr with valid URL, ytube-noapi, youtubei.js) skip the supplement call
+- ESLint: 0 errors
+- Dev server: compiles successfully
