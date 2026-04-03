@@ -73,6 +73,8 @@ export function useUserSettings() {
             const serverSettings = await response.json();
             const merged: UserSettings = { ...DEFAULT_SETTINGS, ...serverSettings };
             setSettingsState(merged);
+            // Sync to localStorage so getInitialSettings() reads correct values on next reload
+            saveLocalSettings(merged);
             setIsSynced(true);
           } else {
             // API error — fall back to defaults
@@ -112,12 +114,13 @@ export function useUserSettings() {
   const setSetting = useCallback((key: string, value: string) => {
     setSettingsState(prev => {
       const updated = { ...prev, [key]: value };
+      // Always persist to localStorage so synchronous reads on reload
+      // (getInitialSettings, loadLocalSettings) return correct values.
+      saveLocalSettings(updated);
       if (isAuthenticated && userId) {
         pendingSettings.current[key] = value;
         if (flushTimer.current) clearTimeout(flushTimer.current);
         flushTimer.current = setTimeout(flushPendingSettings, 300);
-      } else {
-        saveLocalSettings(updated);
       }
       return updated;
     });
@@ -129,16 +132,15 @@ export function useUserSettings() {
       for (const [k, v] of Object.entries(newSettings)) {
         if (v !== undefined) updated[k] = v;
       }
-
+      // Always persist to localStorage so synchronous reads on reload
+      // (getInitialSettings, loadLocalSettings) return correct values.
+      saveLocalSettings(updated);
       if (isAuthenticated && userId) {
         const filtered = Object.fromEntries(Object.entries(newSettings).filter(([, v]) => v !== undefined)) as Record<string, string>;
         pendingSettings.current = { ...pendingSettings.current, ...filtered };
         if (flushTimer.current) clearTimeout(flushTimer.current);
         flushTimer.current = setTimeout(flushPendingSettings, 300);
-      } else {
-        saveLocalSettings(updated);
       }
-
       return updated;
     });
   }, [isAuthenticated, userId, flushPendingSettings]);

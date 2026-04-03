@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useLayoutEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useLayoutEffect, useRef, ReactNode } from 'react';
 import { translations, LanguageCode, TranslationKeys } from './translations';
 import { PrayerProvider } from './prayer-times-context';
 import { useUserSettings } from '@/hooks/useUserSettings';
@@ -77,19 +77,27 @@ function getInitialLanguage(): LanguageCode {
 }
 
 /**
- * Synchronously read initial settings from localStorage.
- * Prevents flash of default values on reload for unauthenticated users.
+ * Synchronously read ALL settings from localStorage.
+ * Prevents flash of default values on reload by initializing every
+ * useState with the user's saved value instead of hardcoded defaults.
  */
-function getInitialSettings(): { language?: string; location?: string } {
+function getInitialSettings(): {
+  language?: string;
+  location?: string;
+  restrictedMode?: string;
+  showGregorianDate?: string;
+  showHijriDate?: string;
+  showRamadanCountdown?: string;
+  hijriOffset?: string;
+  loadMode?: string;
+  sidebarMode?: string;
+  videosPerPage?: string;
+} {
   if (typeof window === "undefined") return {};
   try {
     const stored = localStorage.getItem("orchids-user-settings");
     if (stored) {
-      const parsed = JSON.parse(stored);
-      return {
-        language: parsed.language,
-        location: parsed.location,
-      };
+      return JSON.parse(stored);
     }
   } catch {}
   return {};
@@ -105,39 +113,88 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   const [language, setLanguageState] = useState<LanguageCode>(initialLang);
   const [location, setLocationState] = useState<string>(initialSettings.location || 'مصر');
-  const [restrictedMode, setRestrictedModeState] = useState<boolean>(false);
-  const [showGregorianDate, setShowGregorianDateState] = useState<boolean>(true);
-  const [showHijriDate, setShowHijriDateState] = useState<boolean>(true);
-  const [showRamadanCountdown, setShowRamadanCountdownState] = useState<boolean>(true);
-  const [hijriOffset, setHijriOffsetState] = useState<number>(0);
-  const [loadMode, setLoadModeState] = useState<"auto" | "manual">("auto");
-  const [sidebarMode, setSidebarModeState] = useState<"expanded" | "collapsed" | "hidden">("expanded");
-  const [videosPerPage, setVideosPerPageState] = useState<number>(12);
+  const [restrictedMode, setRestrictedModeState] = useState<boolean>(initialSettings.restrictedMode === 'true');
+  const [showGregorianDate, setShowGregorianDateState] = useState<boolean>(initialSettings.showGregorianDate !== 'false');
+  const [showHijriDate, setShowHijriDateState] = useState<boolean>(initialSettings.showHijriDate !== 'false');
+  const [showRamadanCountdown, setShowRamadanCountdownState] = useState<boolean>(initialSettings.showRamadanCountdown !== 'false');
+  const [hijriOffset, setHijriOffsetState] = useState<number>(parseInt(initialSettings.hijriOffset, 10) || 0);
+  const [loadMode, setLoadModeState] = useState<"auto" | "manual">((initialSettings.loadMode as "auto" | "manual") || "auto");
+  const [sidebarMode, setSidebarModeState] = useState<"expanded" | "collapsed" | "hidden">((initialSettings.sidebarMode as "expanded" | "collapsed" | "hidden") || "expanded");
+  const [videosPerPage, setVideosPerPageState] = useState<number>(parseInt(initialSettings.videosPerPage, 10) || 12);
 
-  // Sync from user settings when loaded (batched for performance)
+  // Track whether we've already applied the initial sync to avoid
+  // re-applying the same values on every `settings` reference change.
+  const hasSyncedRef = useRef(false);
+
+  // Sync from user settings when loaded (batched for performance).
+  // Only applies values that DIFFER from the current state to avoid
+  // unnecessary re-renders that cause visible layout shifts.
   useEffect(() => {
     if (!settingsLoaded) return;
 
+    // On first sync, the state already has the correct values from
+    // localStorage (via getInitialSettings/getInitialLanguage).
+    // For unauthenticated users, settings === localStorage — skip entirely.
+    // For authenticated users, only apply if server has a truly different value.
+    if (hasSyncedRef.current) {
+      // Subsequent syncs: only apply values that actually changed
+      const manuallySet = isLanguageManuallySet();
+      if (!manuallySet && settings.language && translations[settings.language as LanguageCode] && settings.language !== language) {
+        React.startTransition(() => setLanguageState(settings.language as LanguageCode));
+      }
+      return;
+    }
+    hasSyncedRef.current = true;
+
+    // First sync: compare each setting against current state
+    // and only queue updates for values that actually differ.
     const updates: Record<string, any> = {};
-    // ─── CRITICAL: Never override language if user has manually set it ───
-    // The client-side getInitialLanguage() already read the correct language
-    // from localStorage. Server settings may be stale (e.g., default "ar")
-    // and must not overwrite the user's explicit choice.
-    const manuallySet = typeof window !== 'undefined' && isLanguageManuallySet();
-    if (!manuallySet && settings.language && translations[settings.language as LanguageCode]) {
+
+    // Language: never override if manually set (localStorage is the truth)
+    const manuallySet = isLanguageManuallySet();
+    if (!manuallySet && settings.language && translations[settings.language as LanguageCode] && settings.language !== language) {
       updates.language = settings.language as LanguageCode;
     }
-    if (settings.location) updates.location = settings.location;
-    if (settings.restrictedMode !== undefined) updates.restrictedMode = settings.restrictedMode === 'true';
-    if (settings.showGregorianDate !== undefined) updates.showGregorianDate = settings.showGregorianDate === 'true';
-    if (settings.showHijriDate !== undefined) updates.showHijriDate = settings.showHijriDate === 'true';
-    if (settings.showRamadanCountdown !== undefined) updates.showRamadanCountdown = settings.showRamadanCountdown === 'true';
-    if (settings.hijriOffset !== undefined) updates.hijriOffset = parseInt(settings.hijriOffset, 10);
-    if (settings.loadMode) updates.loadMode = settings.loadMode as "auto" | "manual";
-    if (settings.sidebarMode) updates.sidebarMode = settings.sidebarMode as "expanded" | "collapsed" | "hidden";
-    if (settings.videosPerPage) updates.videosPerPage = parseInt(settings.videosPerPage, 10);
+    if (settings.location && settings.location !== location) {
+      updates.location = settings.location;
+    }
+    if (settings.restrictedMode !== undefined) {
+      const val = settings.restrictedMode === 'true';
+      if (val !== restrictedMode) updates.restrictedMode = val;
+    }
+    if (settings.showGregorianDate !== undefined) {
+      const val = settings.showGregorianDate === 'true';
+      if (val !== showGregorianDate) updates.showGregorianDate = val;
+    }
+    if (settings.showHijriDate !== undefined) {
+      const val = settings.showHijriDate === 'true';
+      if (val !== showHijriDate) updates.showHijriDate = val;
+    }
+    if (settings.showRamadanCountdown !== undefined) {
+      const val = settings.showRamadanCountdown === 'true';
+      if (val !== showRamadanCountdown) updates.showRamadanCountdown = val;
+    }
+    if (settings.hijriOffset !== undefined) {
+      const val = parseInt(settings.hijriOffset, 10);
+      if (!isNaN(val) && val !== hijriOffset) updates.hijriOffset = val;
+    }
+    if (settings.loadMode) {
+      const val = settings.loadMode as "auto" | "manual";
+      if (val !== loadMode) updates.loadMode = val;
+    }
+    if (settings.sidebarMode) {
+      const val = settings.sidebarMode as "expanded" | "collapsed" | "hidden";
+      if (val !== sidebarMode) updates.sidebarMode = val;
+    }
+    if (settings.videosPerPage) {
+      const val = parseInt(settings.videosPerPage, 10);
+      if (!isNaN(val) && val !== videosPerPage) updates.videosPerPage = val;
+    }
 
-    // Apply all updates in a single batch using startTransition
+    // If nothing changed, skip re-render entirely
+    if (Object.keys(updates).length === 0) return;
+
+    // Apply only the changed values in a single batch
     React.startTransition(() => {
       if (updates.language) setLanguageState(updates.language);
       if (updates.location) setLocationState(updates.location);

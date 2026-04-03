@@ -798,3 +798,48 @@ Stage Summary:
 - ESLint: 0 errors
 - Dev server: compiles successfully
 - No visible flash of wrong language on reload
+
+---
+Task ID: 4
+Agent: Main Agent
+Task: Fix all settings causing visible reload/flash after page load
+
+Work Log:
+- Analyzed all 10 settings consumed by I18nProvider and their visual impact
+- Found root cause: `getInitialSettings()` only read `language` and `location` from localStorage — all other 8 settings used hardcoded defaults
+- For authenticated users, localStorage was stale because `setSetting()` only saved to server, not localStorage
+
+Fix 1 - Expand synchronous initialization (i18n-context.tsx):
+- `getInitialSettings()` now reads ALL settings from localStorage (restrictedMode, showGregorianDate, showHijriDate, showRamadanCountdown, hijriOffset, loadMode, sidebarMode, videosPerPage)
+- All `useState` calls now use localStorage values as initial state instead of hardcoded defaults
+- For unauthenticated users: zero visible changes on reload (localStorage = source of truth)
+
+Fix 2 - Smart sync with diff comparison (i18n-context.tsx):
+- Added `hasSyncedRef` to track whether initial sync has been applied
+- First sync: compares each server value against current state, only updates if DIFFERENT
+- Subsequent syncs: early return (prevents re-applying same values on every `settings` reference change)
+- If nothing changed, skips re-render entirely (`Object.keys(updates).length === 0`)
+
+Fix 3 - Keep localStorage in sync for authenticated users (useUserSettings.ts):
+- `setSetting()`: now ALWAYS saves to localStorage (not just for unauthenticated users)
+- `saveSettings()`: now ALWAYS saves to localStorage
+- API response handler: saves merged server settings to localStorage after fetch
+- Result: localStorage always matches server → getInitialSettings() returns correct values on next reload
+
+Visual impact per setting (before → after fix):
+- sidebarMode: 168px layout shift → eliminated
+- videosPerPage: grid content replacement → eliminated
+- restrictedMode: video refetch → eliminated
+- showRamadanCountdown: 40px banner shift → eliminated
+- showGregorianDate/showHijriDate: text appear/disappear → eliminated
+- hijriOffset: date text change → eliminated
+- loadMode: subtle observer toggle → eliminated
+- language: RTL/LTR switch → eliminated (from previous fix)
+
+Stage Summary:
+- 2 files modified: i18n-context.tsx, useUserSettings.ts
+- All 10 settings now initialize synchronously from localStorage
+- Sync effect only applies values that differ from current state
+- localStorage stays in sync with server for authenticated users
+- ESLint: 0 errors
+- Dev server: compiles successfully
