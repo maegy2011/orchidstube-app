@@ -117,10 +117,10 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const [showGregorianDate, setShowGregorianDateState] = useState<boolean>(initialSettings.showGregorianDate !== 'false');
   const [showHijriDate, setShowHijriDateState] = useState<boolean>(initialSettings.showHijriDate !== 'false');
   const [showRamadanCountdown, setShowRamadanCountdownState] = useState<boolean>(initialSettings.showRamadanCountdown !== 'false');
-  const [hijriOffset, setHijriOffsetState] = useState<number>(parseInt(initialSettings.hijriOffset, 10) || 0);
+  const [hijriOffset, setHijriOffsetState] = useState<number>(parseInt(initialSettings.hijriOffset ?? '0', 10) || 0);
   const [loadMode, setLoadModeState] = useState<"auto" | "manual">((initialSettings.loadMode as "auto" | "manual") || "auto");
   const [sidebarMode, setSidebarModeState] = useState<"expanded" | "collapsed" | "hidden">((initialSettings.sidebarMode as "expanded" | "collapsed" | "hidden") || "expanded");
-  const [videosPerPage, setVideosPerPageState] = useState<number>(parseInt(initialSettings.videosPerPage, 10) || 12);
+  const [videosPerPage, setVideosPerPageState] = useState<number>(parseInt(initialSettings.videosPerPage ?? '12', 10) || 12);
 
   // Track whether we've already applied the initial sync to avoid
   // re-applying the same values on every `settings` reference change.

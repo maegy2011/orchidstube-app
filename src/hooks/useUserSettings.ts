@@ -59,7 +59,7 @@ export function useUserSettings() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSynced, setIsSynced] = useState(false);
   const pendingSettings = useRef<Record<string, string>>({});
-  const flushTimer = useRef<ReturnType<typeof setTimeout>>();
+  const flushTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
     const controller = new AbortController();
