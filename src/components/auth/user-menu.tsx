@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { User, LogOut, Settings, Loader2, LogIn, EyeOff, Eye } from "lucide-react";
+import { IncognitoMaskIcon } from "@/components/icons/incognito-mask";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
@@ -68,8 +69,8 @@ export function UserMenu() {
                 className="w-8 h-8 rounded-full object-cover ring-2 ring-background shadow-md"
               />
               {isIncognito && (
-                <div className="absolute -top-1 -end-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center ring-2 ring-background">
-                  <EyeOff size={8} className="text-white" />
+                <div className="absolute -top-1.5 -end-1.5 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center ring-2 ring-background shadow-md">
+                  <IncognitoMaskIcon className="w-3.5 h-3.5 text-white" style={{ '--mask-bg': '#d97706' } as React.CSSProperties} />
                 </div>
               )}
             </div>
@@ -82,8 +83,8 @@ export function UserMenu() {
             )}>
               {userInitial}
               {isIncognito && (
-                <div className="absolute -top-1 -end-1 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center ring-2 ring-background">
-                  <EyeOff size={8} className="text-amber-900" />
+                <div className="absolute -top-1.5 -end-1.5 w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center ring-2 ring-background shadow-md">
+                  <IncognitoMaskIcon className="w-3.5 h-3.5 text-amber-900" style={{ '--mask-bg': '#b45309' } as React.CSSProperties} />
                 </div>
               )}
             </div>
@@ -137,7 +138,7 @@ export function UserMenu() {
           onSelect={toggleIncognito}
         >
           {isIncognito ? (
-            <EyeOff size={16} className="text-amber-500" />
+            <IncognitoMaskIcon className="w-4 h-4 text-amber-500" style={{ '--mask-bg': '#fbbf24' } as React.CSSProperties} />
           ) : (
             <Eye size={16} className="text-muted-foreground" />
           )}

@@ -1072,3 +1072,25 @@ Stage Summary:
 - All 33 new translation keys added to all 10 languages (en, ar, fr, es, zh, ja, it, de, pt, tr)
 - Help page, support page, feedback page, and shorts page now display fully translated text in all languages
 - Lint passes cleanly, dev server running without errors
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Replace incognito EyeOff icon with mask icon on user menu avatar
+
+Work Log:
+- Analyzed the uploaded security.png using VLM — identified as a stylized masquerade/domino mask icon representing privacy/anonymity
+- Created custom SVG mask icon component at `src/components/icons/incognito-mask.tsx` matching the uploaded image style
+- Updated `src/components/auth/user-menu.tsx` to use IncognitoMaskIcon instead of EyeOff on the avatar badge (both image and initial avatar variants)
+- Updated `src/components/ui/incognito-banner.tsx` to use IncognitoMaskIcon instead of EyeOff
+- Updated the incognito toggle dropdown item to use the mask icon when active
+- Increased badge size slightly (w-4 h-4 → w-5 h-5) for better mask visibility
+- Added shadow-md to badge for depth
+- Used CSS custom property `--mask-bg` for eye cutout color matching
+
+Stage Summary:
+- Files created: `src/components/icons/incognito-mask.tsx`
+- Files modified: `src/components/auth/user-menu.tsx`, `src/components/ui/incognito-banner.tsx`
+- Mask icon appears as amber badge on user avatar when incognito mode is active
+- Mask icon also used in the incognito banner and dropdown toggle
+- Lint passes cleanly, dev server compiles successfully
