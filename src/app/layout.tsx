@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import * as nextHeaders from "next/headers";
 import "./globals.css";
 import { IBM_Plex_Sans_Arabic } from "next/font/google";
 import ErrorReporter from "@/components/ErrorReporter";
@@ -30,13 +29,19 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const headersList = await nextHeaders.headers();
-  const acceptLanguage = headersList.get('accept-language');
-  const language = acceptLanguage ? acceptLanguage.split(',')[0].split('-')[0] : 'en';
-  const isRTL = language === 'ar';
-
+  // NOTE: lang/dir are set client-side from localStorage to prevent flash of wrong language.
+  // Server fallback values are overridden by the blocking script before first paint.
   return (
-    <html lang={language} dir={isRTL ? "rtl" : "ltr"} className={`${ibmPlexSansArabic.variable}`} suppressHydrationWarning>
+    <html lang="ar" dir="rtl" className={`${ibmPlexSansArabic.variable}`} suppressHydrationWarning>
+      {/* Hide body until client-side language is properly initialized */}
+      <style dangerouslySetInnerHTML={{ __html: 'html:not([data-lang-ready])>body{visibility:hidden}' }} />
+      <noscript><style dangerouslySetInnerHTML={{ __html: 'html>body{visibility:visible!important}' }} /></noscript>
+      {/* Blocking script: reads saved language from localStorage and sets html lang/dir before first paint */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `(function(){try{var d={ar:'rtl',en:'ltr',fr:'ltr',es:'ltr',zh:'ltr',ja:'ltr',it:'ltr',de:'ltr',pt:'ltr',tr:'ltr'};var lang=null;var m=localStorage.getItem('orchids-language-manually-set');if(m&&d[m])lang=m;if(!lang){var s=localStorage.getItem('orchids-user-settings');if(s){var p=JSON.parse(s);if(p.language&&d[p.language])lang=p.language;}}if(!lang){var det=localStorage.getItem('orchids-language-detected');if(det&&d[det])lang=det;}if(lang){document.documentElement.lang=lang;document.documentElement.dir=d[lang];}}catch(e){}})();`,
+        }}
+      />
       <body className="antialiased font-ibm-plex-sans-arabic">
         {/* Register BEFORE Next.js bootstraps — capture phase + stopImmediatePropagation
             guarantees our handler wins over Next.js use-error-handler */}

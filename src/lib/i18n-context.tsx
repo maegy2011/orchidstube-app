@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useLayoutEffect, ReactNode } from 'react';
 import { translations, LanguageCode, TranslationKeys } from './translations';
 import { PrayerProvider } from './prayer-times-context';
 import { useUserSettings } from '@/hooks/useUserSettings';
@@ -158,10 +158,15 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     }
   }, [detectedLang, settings.language]);
 
-  useEffect(() => {
+  // useLayoutEffect runs synchronously after DOM mutations but BEFORE the browser paints.
+  // This prevents the flash of wrong language by setting lang/dir/data-lang-ready
+  // in the same frame as hydration, before the user sees anything.
+  useLayoutEffect(() => {
     if (typeof document !== 'undefined') {
       document.documentElement.lang = language;
       document.documentElement.dir = translations[language]?.direction || (language === 'ar' ? 'rtl' : 'ltr');
+      // Signal that the client-side language is ready — reveals the body (CSS: html:not([data-lang-ready])>body)
+      document.documentElement.setAttribute('data-lang-ready', '');
 
       const appName = t('appName');
       if (appName) {

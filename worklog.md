@@ -743,3 +743,29 @@ Stage Summary:
 - Language now appears in the correct language from the very first client render
 - No more Arabic flash when user has selected English (or any other language)
 - ESLint 0 errors, all pages compile (homepage 200, settings 200)
+
+---
+Task ID: 8
+Agent: Main
+Task: Fix language flash on page load/reload — Arabic shown first instead of user's chosen language
+
+Work Log:
+- Analyzed root cause: 3 interconnected issues causing Arabic flash
+  1. Server component `layout.tsx` sets `<html lang>` and `dir` from `accept-language` header (not user's saved preference)
+  2. `getInitialLanguage()` returns `"ar"` on server (`typeof window === "undefined"`), so all server-rendered text is Arabic
+  3. `useEffect` for updating `document.documentElement.lang/dir` runs AFTER browser paints (too late)
+- Implemented 3-layer fix:
+  1. Added CSS `html:not([data-lang-ready])>body{visibility:hidden}` — body hidden until client sets language
+  2. Added blocking `<script>` in `<head>` that reads localStorage (manually-set > user-settings > auto-detected) and sets correct `lang`/`dir` on `<html>` before any content renders
+  3. Changed `useEffect` → `useLayoutEffect` in I18nProvider — sets `data-lang-ready` attribute + lang/dir BEFORE browser paints
+- Added `<noscript>` fallback: `html>body{visibility:visible!important}` for accessibility when JS disabled
+- Removed unused `next/headers` import from layout.tsx
+- Verified: `bun run lint` passes with 0 errors
+- Verified: dev server compiles successfully, page loads correctly
+- Verified: HTML output contains all 3 fix elements (style, noscript, blocking script)
+
+Stage Summary:
+- Root cause: server-rendered `<html>` always used accept-language header, not user's localStorage preference
+- Fix: CSS visibility gate + blocking localStorage script + useLayoutEffect for atomic reveal
+- Files modified: layout.tsx, i18n-context.tsx (2 files)
+- No flash of wrong language — body hidden until client-side language is properly initialized
