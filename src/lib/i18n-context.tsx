@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { translations, LanguageCode, TranslationKeys } from './translations';
 import { PrayerProvider } from './prayer-times-context';
 import { useUserSettings } from '@/hooks/useUserSettings';
-import { detectFromLocation, useAutoLanguageDetection, markLanguageManuallySet } from './language-detect';
+import { detectFromLocation, useAutoLanguageDetection, markLanguageManuallySet, getAutoDetectedLanguage, isLanguageManuallySet } from './language-detect';
 
 interface I18nContextType {
   language: LanguageCode;
@@ -16,29 +16,95 @@ interface I18nContextType {
   showGregorianDate: boolean;
   setShowGregorianDate: (show: boolean) => void;
     showHijriDate: boolean;
-    setShowHijriDate: (show: boolean) => void;
+  setShowHijriDate: (show: boolean) => void;
     showRamadanCountdown: boolean;
-    setShowRamadanCountdown: (show: boolean) => void;
+  setShowRamadanCountdown: (show: boolean) => void;
     hijriOffset: number;
-    setHijriOffset: (offset: number) => void;
+  setHijriOffset: (offset: number) => void;
     loadMode: "auto" | "manual";
-    setLoadMode: (mode: "auto" | "manual") => void;
-  sidebarMode: "expanded" | "collapsed" | "hidden";
+  setLoadMode: (mode: "auto" | "manual") => void;
+    sidebarMode: "expanded" | "collapsed" | "hidden";
   setSidebarMode: (mode: "expanded" | "collapsed" | "hidden") => void;
-  videosPerPage: number;
+    videosPerPage: number;
   setVideosPerPage: (count: number) => void;
-  t: (key: string) => string;
+    t: (key: string) => string;
   direction: "ltr" | "rtl";
 }
 
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
+/**
+ * Synchronously read the user's saved language from localStorage.
+ * This eliminates the flash of wrong language on reload by providing
+ * the correct language before any async operation completes.
+ *
+ * Priority: manually-set language > user-settings > auto-detected > 'ar'
+ */
+function getInitialLanguage(): LanguageCode {
+  if (typeof window === "undefined") return "ar";
+
+  // 1. Check if user has explicitly set a language
+  try {
+    const manual = localStorage.getItem("orchids-language-manually-set");
+    if (manual && translations[manual as LanguageCode]) return manual as LanguageCode;
+  } catch {}
+
+  // 2. Check user settings (for unauthenticated users, this is the source of truth)
+  try {
+    const stored = localStorage.getItem("orchids-user-settings");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed.language && translations[parsed.language as LanguageCode]) {
+        return parsed.language as LanguageCode;
+      }
+    }
+  } catch {}
+
+  // 3. Check auto-detected language cache
+  try {
+    const detected = localStorage.getItem("orchids-language-detected");
+    if (detected && translations[detected as LanguageCode]) return detected as LanguageCode;
+  } catch {}
+
+  // 4. Fall back to browser locale detection (synchronous)
+  try {
+    const browserLang = getAutoDetectedLanguage();
+    if (browserLang && translations[browserLang]) return browserLang;
+  } catch {}
+
+  return "ar";
+}
+
+/**
+ * Synchronously read initial settings from localStorage.
+ * Prevents flash of default values on reload for unauthenticated users.
+ */
+function getInitialSettings(): { language?: string; location?: string } {
+  if (typeof window === "undefined") return {};
+  try {
+    const stored = localStorage.getItem("orchids-user-settings");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return {
+        language: parsed.language,
+        location: parsed.location,
+      };
+    }
+  } catch {}
+  return {};
+}
+
 export function I18nProvider({ children }: { children: ReactNode }) {
   const { settings, isLoaded: settingsLoaded, setSetting } = useUserSettings();
 
-  const [language, setLanguageState] = useState<LanguageCode>('ar');
-  const [location, setLocationState] = useState<string>('مصر');
+  // ─── Synchronous initialization from localStorage ───
+  // This eliminates the flash by reading saved language before any async load
+  const initialLang = getInitialLanguage();
+  const initialSettings = getInitialSettings();
+
+  const [language, setLanguageState] = useState<LanguageCode>(initialLang);
+  const [location, setLocationState] = useState<string>(initialSettings.location || 'مصر');
   const [restrictedMode, setRestrictedModeState] = useState<boolean>(false);
   const [showGregorianDate, setShowGregorianDateState] = useState<boolean>(true);
   const [showHijriDate, setShowHijriDateState] = useState<boolean>(true);

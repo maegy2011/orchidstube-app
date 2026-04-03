@@ -52,7 +52,10 @@ function saveLocalSettings(settings: UserSettings) {
 
 export function useUserSettings() {
   const { userId, isAuthenticated } = useUser();
-  const [settings, setSettingsState] = useState<UserSettings>(DEFAULT_SETTINGS);
+  // ─── Synchronous initialization from localStorage ───
+  // This prevents flash of default values on reload by reading
+  // stored settings before any async operation completes.
+  const [settings, setSettingsState] = useState<UserSettings>(() => loadLocalSettings());
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSynced, setIsSynced] = useState(false);
   const pendingSettings = useRef<Record<string, string>>({});

@@ -713,3 +713,33 @@ Stage Summary:
 - Full incognito mode feature implemented across 12 files
 - ESLint 0 errors, all routes compile, homepage 200, settings 200, signin 200
 - 7 data write points gated; reading existing data still works (but won't be written back)
+---
+Task ID: 3
+Agent: main
+Task: Fix language flash on app load/reload (FOIL — Flash of Incorrect Language)
+
+Work Log:
+- Root cause: 3-layer async initialization chain causes flash:
+  1. `useSession()` resolves → `useUser()` gets userId
+  2. `useUserSettings()` starts async loading (API fetch or localStorage read)
+  3. `I18nProvider` sync effect fires only after `settingsLoaded=true`
+  Between mount and step 3, `useState('ar')` renders everything in Arabic.
+- Fix 1 — `src/lib/i18n-context.tsx`:
+  - Added `getInitialLanguage()` — synchronous function that reads from localStorage in priority order:
+    1. `orchids-language-manually-set` (user explicitly chose)
+    2. `orchids-user-settings` JSON (unauthenticated stored settings)
+    3. `orchids-language-detected` (auto-detection cache)
+    4. Browser locale via `getAutoDetectedLanguage()`
+    5. Fallback `'ar'`
+  - Added `getInitialSettings()` for location
+  - Changed `useState<LanguageCode>('ar')` → `useState<LanguageCode>(initialLang)`
+  - Changed `useState<string>('مصر')` → `useState<string>(initialSettings.location || 'مصر')`
+- Fix 2 — `src/hooks/useUserSettings.ts`:
+  - Changed `useState(DEFAULT_SETTINGS)` → `useState(() => loadLocalSettings())`
+  - This initializes ALL settings from localStorage synchronously on mount
+  - Eliminates the async gap where defaults were shown
+
+Stage Summary:
+- Language now appears in the correct language from the very first client render
+- No more Arabic flash when user has selected English (or any other language)
+- ESLint 0 errors, all pages compile (homepage 200, settings 200)
