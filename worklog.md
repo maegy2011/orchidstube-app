@@ -1463,3 +1463,41 @@ Stage Summary:
 - Tab bar removed — NotesSection renders directly
 - ESLint: 0 errors
 - Dev server: compiles successfully
+
+---
+Task ID: playlist-fix-enhance
+Agent: Main Agent + 3 parallel sub-agents
+Task: Fix and enhance the playlist system
+
+Work Log:
+- Ran comprehensive audit of entire playlist system (11 files)
+- Identified 8 bugs and 10 rough edges/missing features
+
+**Bug Fixes Applied:**
+
+1. **P0: Missing translation keys** — `addToPlaylist`, `selectPlaylist`, `addedToPlaylist`, `removedFromPlaylist` were missing from en.ts/ar.ts, causing raw key strings to display in UI. Added these + 6 more keys (`alreadyInPlaylist`, `totalPlaylists`, `playlistBackTitle`, `playlistNotFound`, `video_one`, `video_other`) to ALL 10 language files (100 new key-value pairs total).
+
+2. **P0: itemsMap empty for authenticated users** — `usePlaylists` hook only called `GET /api/playlists` (metadata only, no items). `isInPlaylist()` always returned false for logged-in users. Fixed by fetching `GET /api/playlists/${id}` for every playlist after initial load using `Promise.allSettled`.
+
+3. **P0: Playlist detail page fails for unauthenticated users** — Page only fetched from API (returns 401 for guests). Fixed to check `isAuthenticated` and fall back to `usePlaylists` hook's `itemsMap` from localStorage for unauthenticated users.
+
+4. **P1: Playlist thumbnail never auto-set** — When adding first video, the playlist thumbnail remained empty. Fixed in `addToPlaylist` callback: if playlist has no thumbnail and video has one, auto-set it.
+
+5. **P1: Hardcoded Arabic strings in AddToPlaylistModal** — Replaced inline `language === 'ar' ? 'فيديو واحد' : '1 video'` with `t('video_one')` / `t('video_other').replace('{count}', ...)`.
+
+6. **P2: Stale closures in usePlaylists** — `persistLocal([...playlists, ...])` used stale closure values. Fixed with `playlistsRef` and `itemsMapRef` refs that always hold latest values.
+
+7. **P2: Silent error swallowing** — All API mutations used `.catch(() => {})`. Added `toast.error()` for failed mutations. `createPlaylist` also reverts optimistic state on failure.
+
+8. **P2: Wrong error messages on detail page** — `t("video_not_found")` replaced with `t("playlistNotFound")`.
+
+9. **P2: Dead code cleanup** — Removed unused `Loader2` import and `playlistName` variable from playlists listing page.
+
+10. **Sidebar navigation** — Verified Playlists link already exists in sidebar (ListPlus icon, `/playlists` path).
+
+Stage Summary:
+- Files modified: usePlaylists.ts, AddToPlaylistModal.tsx, playlists/page.tsx, playlists/[id]/page.tsx, en.ts, ar.ts, fr.ts, es.ts, zh.ts, ja.ts, it.ts, de.ts, pt.ts, tr.ts
+- 8 bugs fixed, 10 rough edges addressed
+- 100 new translation key-value pairs across 10 languages
+- ESLint: 0 errors
+- Dev server: compiles successfully, playlist API returning 200

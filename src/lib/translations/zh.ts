@@ -398,5 +398,15 @@ export const translationsZh = {
     hijri_month_10: "闪瓦鲁月",
     hijri_month_11: "都尔·卡尔德月",
     hijri_month_12: "都尔·黑哲月",
+  addToPlaylist: "添加到播放列表",
+  selectPlaylist: "选择播放列表",
+  addedToPlaylist: "已添加到播放列表",
+  removedFromPlaylist: "已从播放列表移除",
+  alreadyInPlaylist: "已在播放列表中",
+  totalPlaylists: "播放列表总数：{count}",
+  playlistBackTitle: "返回播放列表",
+  playlistNotFound: "播放列表未找到",
+  video_one: "1 个视频",
+  video_other: "{count} 个视频",
   } as const;
 

@@ -161,9 +161,7 @@ export default function AddToPlaylistModal({
                         {playlist.name}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {playlist.videoCount === 1
-                          ? (language === 'ar' ? 'فيديو واحد' : '1 video')
-                          : (language === 'ar' ? `${playlist.videoCount} فيديو` : `${playlist.videoCount} videos`)}
+                        {playlist.videoCount === 1 ? t('video_one') : t('video_other').replace('{count}', String(playlist.videoCount))}
                       </p>
                     </div>
 

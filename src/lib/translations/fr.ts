@@ -398,5 +398,15 @@ export const translationsFr = {
     hijri_month_10: "Chawwal",
     hijri_month_11: "Dhou al-Qi'da",
     hijri_month_12: "Dhou al-Hijja",
+  addToPlaylist: "Ajouter à la playlist",
+  selectPlaylist: "Sélectionner une playlist",
+  addedToPlaylist: "Ajouté à la playlist",
+  removedFromPlaylist: "Retiré de la playlist",
+  alreadyInPlaylist: "Déjà dans la playlist",
+  totalPlaylists: "Playlists totales : {count}",
+  playlistBackTitle: "Retour aux playlists",
+  playlistNotFound: "Playlist introuvable",
+  video_one: "1 vidéo",
+  video_other: "{count} vidéos",
   } as const;
 

@@ -544,5 +544,15 @@ export const translationsAr = {
             createdOn: "تاريخ الإنشاء",
             renamePlaylist: "إعادة تسمية القائمة",
             renamePlaylistPlaceholder: "أدخل الاسم الجديد للقائمة",
+            addToPlaylist: "إضافة إلى قائمة التشغيل",
+            selectPlaylist: "اختر قائمة تشغيل",
+            addedToPlaylist: "تمت الإضافة إلى القائمة",
+            removedFromPlaylist: "تمت الإزالة من القائمة",
+            alreadyInPlaylist: "موجود بالفعل في القائمة",
+            totalPlaylists: "إجمالي القوائم: {count}",
+            playlistBackTitle: "العودة إلى القوائم",
+            playlistNotFound: "قائمة التشغيل غير موجودة",
+            video_one: "فيديو واحد",
+            video_other: "{count} فيديو",
           } as const;
 

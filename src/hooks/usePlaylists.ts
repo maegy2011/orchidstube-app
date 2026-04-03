@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useUser } from '@/hooks/use-user';
 import { useIncognito } from '@/lib/incognito-context';
+import { toast } from 'sonner';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -43,7 +44,6 @@ function loadLocalData(): LocalPlaylistData {
     const stored = localStorage.getItem(PLAYLISTS_STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored) as LocalPlaylistData;
-      // Ensure every playlist has a videoCount computed from items
       const playlists = (parsed.playlists || []).map(p => ({
         ...p,
         videoCount: (parsed.items?.[p.id] || []).length,
@@ -97,6 +97,12 @@ export function usePlaylists() {
   const [itemsMap, setItemsMap] = useState<Record<string, PlaylistItem[]>>({});
   const [isLoaded, setIsLoaded] = useState(false);
 
+  // Refs to avoid stale closures
+  const playlistsRef = useRef(playlists);
+  const itemsMapRef = useRef(itemsMap);
+  playlistsRef.current = playlists;
+  itemsMapRef.current = itemsMap;
+
   // ── Load data on mount / auth change ────────────────────────────────────────
 
   useEffect(() => {
@@ -111,6 +117,24 @@ export function usePlaylists() {
             const serverData = await response.json();
             const serverPlaylists: Playlist[] = (serverData || []).map(mapServerPlaylist);
             setPlaylists(serverPlaylists);
+
+            // Fetch items for ALL playlists so isInPlaylist works
+            const itemsResponses = await Promise.allSettled(
+              serverPlaylists.map(p =>
+                fetch(`/api/playlists/${p.id}`, { signal: controller.signal }).then(r => r.ok ? r.json() : null)
+              )
+            );
+
+            const newItemsMap: Record<string, PlaylistItem[]> = {};
+            for (let i = 0; i < serverPlaylists.length; i++) {
+              const result = itemsResponses[i];
+              if (result.status === 'fulfilled' && result.value?.items) {
+                newItemsMap[serverPlaylists[i].id] = result.value.items.map(mapServerPlaylistItem);
+              } else {
+                newItemsMap[serverPlaylists[i].id] = [];
+              }
+            }
+            setItemsMap(newItemsMap);
           }
         } catch (err) {
           if (err instanceof DOMException && err.name === 'AbortError') return;
@@ -150,7 +174,6 @@ export function usePlaylists() {
       updatedAt: now,
     };
 
-    // Optimistic update
     setPlaylists(prev => [...prev, newPlaylist]);
     setItemsMap(prev => ({ ...prev, [newPlaylist.id]: [] }));
 
@@ -159,13 +182,18 @@ export function usePlaylists() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, description }),
-      }).catch(() => {});
+      }).catch(() => {
+        toast.error('Failed to create playlist');
+        setPlaylists(prev => prev.filter(p => p.id !== newPlaylist.id));
+      });
     } else {
-      persistLocal([...playlists, newPlaylist], { ...itemsMap, [newPlaylist.id]: [] });
+      const updatedPlaylists = [...playlistsRef.current, newPlaylist];
+      const updatedItems = { ...itemsMapRef.current, [newPlaylist.id]: [] };
+      persistLocal(updatedPlaylists, updatedItems);
     }
 
     return newPlaylist;
-  }, [isAuthenticated, userId, playlists, itemsMap, persistLocal]);
+  }, [isAuthenticated, userId, persistLocal]);
 
   // ── updatePlaylist ──────────────────────────────────────────────────────────
 
@@ -177,7 +205,7 @@ export function usePlaylists() {
         p.id === id ? { ...p, ...updates, updatedAt: now } : p
       );
       if (!isAuthenticated) {
-        saveLocalData({ playlists: updated, items: itemsMap });
+        saveLocalData({ playlists: updated, items: itemsMapRef.current });
       }
       return updated;
     });
@@ -187,9 +215,11 @@ export function usePlaylists() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, ...updates }),
-      }).catch(() => {});
+      }).catch(() => {
+        toast.error('Failed to update playlist');
+      });
     }
-  }, [isAuthenticated, userId, itemsMap]);
+  }, [isAuthenticated, userId]);
 
   // ── deletePlaylist ──────────────────────────────────────────────────────────
 
@@ -197,7 +227,7 @@ export function usePlaylists() {
     setPlaylists(prev => {
       const updated = prev.filter(p => p.id !== id);
       if (!isAuthenticated) {
-        const { [id]: _, ...restItems } = itemsMap;
+        const { [id]: _, ...restItems } = itemsMapRef.current;
         saveLocalData({ playlists: updated, items: restItems });
       }
       return updated;
@@ -213,17 +243,19 @@ export function usePlaylists() {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id }),
-      }).catch(() => {});
+      }).catch(() => {
+        toast.error('Failed to delete playlist');
+      });
     }
-  }, [isAuthenticated, userId, itemsMap]);
+  }, [isAuthenticated, userId]);
 
   // ── addToPlaylist ───────────────────────────────────────────────────────────
 
   const addToPlaylist = useCallback((playlistId: string, video: { videoId: string; title: string; thumbnail?: string; channelName?: string; duration?: string }) => {
-    if (isIncognito) return; // Blocked in incognito mode
+    if (isIncognito) return;
 
     // Check if already in playlist
-    const existing = itemsMap[playlistId] || [];
+    const existing = itemsMapRef.current[playlistId] || [];
     if (existing.some(item => item.videoId === video.videoId)) return;
 
     const now = new Date().toISOString();
@@ -245,7 +277,7 @@ export function usePlaylists() {
         [playlistId]: [...(prev[playlistId] || []), newItem],
       };
       if (!isAuthenticated) {
-        const updatedPlaylists = playlists.map(p =>
+        const updatedPlaylists = playlistsRef.current.map(p =>
           p.id === playlistId ? { ...p, videoCount: (updated[playlistId] || []).length } : p
         );
         saveLocalData({ playlists: updatedPlaylists, items: updated });
@@ -258,14 +290,32 @@ export function usePlaylists() {
       p.id === playlistId ? { ...p, videoCount: p.videoCount + 1 } : p
     ));
 
+    // Auto-set thumbnail if playlist has none and video has one
+    const playlist = playlistsRef.current.find(p => p.id === playlistId);
+    if (playlist && !playlist.thumbnail && video.thumbnail) {
+      setPlaylists(prev => prev.map(p =>
+        p.id === playlistId ? { ...p, thumbnail: video.thumbnail || '' } : p
+      ));
+    }
+
     if (isAuthenticated && userId) {
       fetch('/api/playlists/items', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ playlistId, ...video }),
-      }).catch(() => {});
+      }).catch(() => {
+        toast.error('Failed to add to playlist');
+        // Revert optimistic update
+        setItemsMap(prev => ({
+          ...prev,
+          [playlistId]: (prev[playlistId] || []).filter(i => i.videoId !== video.videoId),
+        }));
+        setPlaylists(prev => prev.map(p =>
+          p.id === playlistId ? { ...p, videoCount: Math.max(0, p.videoCount - 1) } : p
+        ));
+      });
     }
-  }, [isIncognito, isAuthenticated, userId, itemsMap, playlists]);
+  }, [isIncognito, isAuthenticated, userId]);
 
   // ── removeFromPlaylist ──────────────────────────────────────────────────────
 
@@ -277,7 +327,7 @@ export function usePlaylists() {
         [playlistId]: (prev[playlistId] || []).filter(item => item.videoId !== videoId),
       };
       if (!isAuthenticated) {
-        const updatedPlaylists = playlists.map(p =>
+        const updatedPlaylists = playlistsRef.current.map(p =>
           p.id === playlistId ? { ...p, videoCount: (updated[playlistId] || []).length } : p
         );
         saveLocalData({ playlists: updatedPlaylists, items: updated });
@@ -295,28 +345,30 @@ export function usePlaylists() {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ playlistId, videoId }),
-      }).catch(() => {});
+      }).catch(() => {
+        toast.error('Failed to remove from playlist');
+      });
     }
-  }, [isAuthenticated, userId, playlists]);
+  }, [isAuthenticated, userId]);
 
   // ── isInPlaylist ────────────────────────────────────────────────────────────
 
   const isInPlaylist = useCallback((playlistId: string, videoId: string): boolean => {
-    return (itemsMap[playlistId] || []).some(item => item.videoId === videoId);
-  }, [itemsMap]);
+    return (itemsMapRef.current[playlistId] || []).some(item => item.videoId === videoId);
+  }, []);
 
   // ── getPlaylistsForVideo ────────────────────────────────────────────────────
 
   const getPlaylistsForVideo = useCallback((videoId: string): Playlist[] => {
     const result: Playlist[] = [];
-    for (const playlist of playlists) {
-      const items = itemsMap[playlist.id] || [];
+    for (const playlist of playlistsRef.current) {
+      const items = itemsMapRef.current[playlist.id] || [];
       if (items.some(item => item.videoId === videoId)) {
         result.push(playlist);
       }
     }
     return result;
-  }, [playlists, itemsMap]);
+  }, []);
 
   // ── refreshPlaylist ─────────────────────────────────────────────────────────
 
@@ -326,13 +378,11 @@ export function usePlaylists() {
       if (response.ok) {
         const data = await response.json();
 
-        // Update the playlist itself
         if (data.playlist) {
           const mapped = mapServerPlaylist(data.playlist);
           setPlaylists(prev => prev.map(p => p.id === id ? mapped : p));
         }
 
-        // Update items for this playlist
         if (data.items) {
           const serverItems: PlaylistItem[] = (data.items || []).map(mapServerPlaylistItem);
           setItemsMap(prev => ({ ...prev, [id]: serverItems }));
@@ -343,6 +393,7 @@ export function usePlaylists() {
 
   return {
     playlists,
+    itemsMap,
     isLoaded,
     createPlaylist,
     updatePlaylist,

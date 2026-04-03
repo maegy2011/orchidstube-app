@@ -6,6 +6,7 @@ import Link from "next/link";
 import Masthead from "@/components/sections/masthead";
 import SidebarGuide from "@/components/sections/sidebar-guide";
 import { useI18n } from "@/lib/i18n-context";
+import { useUser } from "@/hooks/use-user";
 import { useSidebarLayout } from "@/hooks/use-sidebar-layout";
 import { useTopPadding } from "@/hooks/use-top-padding";
 import { usePlaylists, type Playlist, type PlaylistItem } from "@/hooks/usePlaylists";
@@ -38,12 +39,20 @@ export default function PlaylistDetailPage() {
   const playlistId = params.id as string;
 
   const { t, direction, language } = useI18n();
-  const { playlists, deletePlaylist, removeFromPlaylist } = usePlaylists();
+  const { isAuthenticated } = useUser();
+  const { playlists, deletePlaylist, removeFromPlaylist, itemsMap, isLoaded: playlistsLoaded } = usePlaylists();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [items, setItems] = useState<PlaylistItem[]>([]);
+  const [serverItems, setServerItems] = useState<PlaylistItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const mainPaddingTop = useTopPadding();
   const { marginClass } = useSidebarLayout(sidebarOpen);
+
+  // Find playlist from the hook's list
+  const playlist = playlists.find((p) => p.id === playlistId);
+
+  // For unauthenticated users, items come from localStorage via usePlaylists hook
+  // For authenticated users, items are fetched from the API
+  const items = isAuthenticated ? serverItems : (itemsMap[playlistId] || []);
 
   useEffect(() => {
     if (window.innerWidth >= 1200) {
@@ -51,11 +60,14 @@ export default function PlaylistDetailPage() {
     }
   }, []);
 
-  // Find playlist from the hook's list
-  const playlist = playlists.find((p) => p.id === playlistId);
-
-  // Fetch playlist items on mount
+  // Fetch playlist items on mount (authenticated users only)
   useEffect(() => {
+    if (!isAuthenticated) {
+      // Unauthenticated: data comes from localStorage via usePlaylists hook
+      setIsLoading(false);
+      return;
+    }
+
     const controller = new AbortController();
 
     const fetchItems = async () => {
@@ -67,7 +79,7 @@ export default function PlaylistDetailPage() {
         if (response.ok) {
           const data = await response.json();
           if (data.items) {
-            const serverItems: PlaylistItem[] = data.items.map((item: any) => ({
+            const mapped: PlaylistItem[] = data.items.map((item: any) => ({
               id: item.id,
               playlistId: item.playlist_id,
               videoId: item.video_id,
@@ -77,7 +89,7 @@ export default function PlaylistDetailPage() {
               duration: item.duration || "",
               addedAt: item.created_at || new Date().toISOString(),
             }));
-            setItems(serverItems);
+            setServerItems(mapped);
           }
         }
       } catch (err) {
@@ -91,7 +103,7 @@ export default function PlaylistDetailPage() {
 
     fetchItems();
     return () => controller.abort();
-  }, [playlistId]);
+  }, [playlistId, isAuthenticated]);
 
   // ── Animation variants ─────────────────────────────────────────────────────
 
@@ -131,7 +143,7 @@ export default function PlaylistDetailPage() {
 
   const handleRemoveItem = (videoId: string) => {
     removeFromPlaylist(playlistId, videoId);
-    setItems((prev) => prev.filter((item) => item.videoId !== videoId));
+    setServerItems((prev) => prev.filter((item) => item.videoId !== videoId));
     toast.success(t("videoRemoved"));
   };
 
@@ -230,10 +242,10 @@ export default function PlaylistDetailPage() {
                   <ListVideo className="size-10 text-muted-foreground" />
                 </div>
                 <h2 className="text-xl font-bold mb-2">
-                  {t("video_not_found")}
+                  {t("playlistNotFound")}
                 </h2>
                 <p className="text-muted-foreground mb-6">
-                  {t("video_not_found_desc")}
+                  {t("emptyPlaylistDesc")}
                 </p>
                 <Link
                   href="/playlists"

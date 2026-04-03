@@ -10,7 +10,7 @@ import { usePlaylists, type Playlist } from "@/hooks/usePlaylists";
 import PlaylistCard from "@/components/playlists/PlaylistCard";
 import CreatePlaylistDialog from "@/components/playlists/CreatePlaylistDialog";
 import { motion, AnimatePresence } from "framer-motion";
-import { ListVideo, Loader2 } from "lucide-react";
+import { ListVideo } from "lucide-react";
 import { toast } from "sonner";
 
 export default function PlaylistsPage() {
@@ -54,8 +54,6 @@ export default function PlaylistsPage() {
   // ── Handlers ───────────────────────────────────────────────────────────────
 
   const handleDelete = (id: string) => {
-    const playlist = playlists.find((p) => p.id === id);
-    const playlistName = playlist?.name || t("deletePlaylist");
     const confirmed = window.confirm(t("deletePlaylistConfirm"));
     if (!confirmed) return;
 

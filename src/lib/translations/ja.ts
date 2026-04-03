@@ -398,5 +398,15 @@ export const translationsJa = {
     hijri_month_10: "シャウワール",
     hijri_month_11: "ズル・カアダ",
     hijri_month_12: "ズル・ヒッジャ",
+  addToPlaylist: "プレイリストに追加",
+  selectPlaylist: "プレイリストを選択",
+  addedToPlaylist: "プレイリストに追加しました",
+  removedFromPlaylist: "プレイリストから削除しました",
+  alreadyInPlaylist: "既にプレイリストにあります",
+  totalPlaylists: "プレイリスト合計: {count}",
+  playlistBackTitle: "プレイリストに戻る",
+  playlistNotFound: "プレイリストが見つかりません",
+  video_one: "1本の動画",
+  video_other: "{count}本の動画",
   } as const;
 

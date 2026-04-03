@@ -398,5 +398,15 @@ export const translationsTr = {
     hijri_month_10: "Şevval",
     hijri_month_11: "Zilkade",
     hijri_month_12: "Zilhicce",
+  addToPlaylist: "Oynatma listesine ekle",
+  selectPlaylist: "Bir oynatma listesi seçin",
+  addedToPlaylist: "Oynatma listesine eklendi",
+  removedFromPlaylist: "Oynatma listesinden kaldırıldı",
+  alreadyInPlaylist: "Zaten listede",
+  totalPlaylists: "Toplam: {count} liste",
+  playlistBackTitle: "Listelere dön",
+  playlistNotFound: "Oynatma listesi bulunamadı",
+  video_one: "1 video",
+  video_other: "{count} video",
   } as const;
 
