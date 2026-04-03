@@ -3,7 +3,7 @@ import { searchVideosWithContinuation } from '@/lib/youtube';
 import { filterContent, loadFilterConfig } from '@/lib/content-filter';
 
 const CATEGORY_SEARCH_TERMS: Record<string, string[]> = {
-  education: ['تعليم', 'شرح', 'درس', 'كورس', 'تعلم', 'دورة تدريبية', 'محاضرات'],
+  education: ['تعليم', 'شرح', 'درس', 'كورس', 'تعلم', 'دورة تدريبية', 'محاضرات', 'محاضرة', 'ملخص'],
   quran: ['قرآن', 'تلاوة خاشعة', 'تجويد', 'سورة كاملة', 'المصحف المرتل', 'القرآن الكريم'],
   programming: ['برمجة', 'تعلم البرمجة', 'كورس برمجة', 'تطوير الويب', 'جافا سكريبت', 'بايثون'],
   science: ['علوم', 'وثائقي علمي', 'ناشيونال جيوغرافيك', 'حقائق علمية', 'تجربة علمية'],
@@ -21,23 +21,102 @@ const CATEGORY_SEARCH_TERMS: Record<string, string[]> = {
   ai: ['ذكاء اصطناعي', 'ai', 'مستقبل التقنية', 'روبوتات', 'شات جي بي تي'],
 };
 
+// Deterministic seeded shuffle for consistent variation per page
+function seededShuffle<T>(arr: T[], seed: number): T[] {
+  const result = [...arr];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = ((seed * 2654435761) >>> 0) % (i + 1);
+    [result[i], result[j]] = [result[j], result[i]];
+    seed = (seed * 2654435761 + 1) >>> 0;
+  }
+  return result;
+}
+
 function enhanceQueryForAllowedContent(query: string, allowedCategories: string[]): string[] {
   const queries: string[] = [query];
-  
-  // Mix in 3-4 different variations to maximize results
   const shuffledCategories = [...allowedCategories].sort(() => 0.5 - Math.random());
   const selectedCategories = shuffledCategories.slice(0, 3);
   
   for (const category of selectedCategories) {
     const terms = CATEGORY_SEARCH_TERMS[category];
     if (terms && terms.length > 0) {
-      // Add a random term from this category
       const randomTerm = terms[Math.floor(Math.random() * terms.length)];
       queries.push(`${query} ${randomTerm}`);
     }
   }
   
   return queries;
+}
+
+/**
+ * Generate diverse, page-specific query variations.
+ * Each page gets a different set of variations to maximize unique results.
+ */
+function generatePaginationVariations(
+  query: string, 
+  page: number, 
+  attempt: number, 
+  allowedCategories: string[]
+): string[] {
+  const variations: string[] = [];
+  const allCategoryKeys = Object.keys(CATEGORY_SEARCH_TERMS);
+  const seed = (page - 1) * 10 + attempt;
+
+  // Strategy 1: Category term combinations — use different categories per page
+  const shuffledCategories = seededShuffle(allCategoryKeys, seed);
+  for (let i = 0; i < Math.min(3, shuffledCategories.length); i++) {
+    const cat = shuffledCategories[i];
+    const terms = CATEGORY_SEARCH_TERMS[cat];
+    if (terms && terms.length > 0) {
+      const termIdx = (seed + i) % terms.length;
+      variations.push(`${query} ${terms[termIdx]}`);
+    }
+  }
+
+  // Strategy 2: Allowed-category specific terms
+  if (allowedCategories.length > 0) {
+    const shuffled = seededShuffle(allowedCategories, seed + 100);
+    for (let i = 0; i < Math.min(2, shuffled.length); i++) {
+      const cat = shuffled[i];
+      const terms = CATEGORY_SEARCH_TERMS[cat];
+      if (terms && terms.length > 0) {
+        const termIdx = (seed + i + 50) % terms.length;
+        variations.push(`${query} ${terms[termIdx]}`);
+      }
+    }
+  }
+
+  // Strategy 3: Qualifiers and modifiers
+  const qualifiers = [
+    'latest', 'new', 'popular', 'top', 'best', 'trending', 
+    'recommended', 'recent', 'official', 'full', 'complete',
+    'حديث', 'جديد', 'مميز', 'الأفضل', 'الأكثر مشاهدة', 'مختار',
+  ];
+  const qualStart = seed % qualifiers.length;
+  variations.push(`${query} ${qualifiers[qualStart]}`);
+  variations.push(`${query} ${qualifiers[(qualStart + 3) % qualifiers.length]}`);
+
+  // Strategy 4: Numeric suffixes for different result sets
+  const numOffset = (page - 1) * 3 + attempt;
+  variations.push(`${query} ${numOffset + 1}`);
+  if (attempt > 0) {
+    variations.push(`${query} ${numOffset + 2}`);
+  }
+
+  // Strategy 5: "Part N" pattern
+  if (page > 1) {
+    variations.push(`${query} part ${page}`);
+    variations.push(`${query} episode ${page}`);
+    variations.push(`${query} حلقة ${page}`);
+  }
+
+  // Deduplicate and remove original query
+  const seen = new Set<string>();
+  return variations.filter(v => {
+    if (v === query || seen.has(v)) return false;
+    seen.add(v);
+    return true;
+  });
 }
 
 export async function GET(request: NextRequest) {
@@ -49,6 +128,9 @@ export async function GET(request: NextRequest) {
   const restricted = searchParams.get('restricted') === 'true';
   const limit = Math.min(parseInt(searchParams.get('limit') || '30'), 100);
   const page = Math.max(parseInt(searchParams.get('page') || '1'), 1);
+  // Client can pass already-known video IDs to exclude for better pagination
+  const excludeIdsParam = searchParams.get('excludeIds');
+  const excludeIds = new Set(excludeIdsParam ? excludeIdsParam.split(',').filter(Boolean) : []);
 
   if (!query || query.trim().length === 0) {
     return NextResponse.json({ 
@@ -60,7 +142,8 @@ export async function GET(request: NextRequest) {
 
   try {
     const config = loadFilterConfig();
-    const searchQueries = (restricted && config.defaultDeny && !token)
+    const isPaginationRequest = page > 1 && !token;
+    const searchQueries = (restricted && config.defaultDeny && !isPaginationRequest)
       ? enhanceQueryForAllowedContent(query, config.allowedCategories)
       : [query];
     
@@ -80,21 +163,25 @@ export async function GET(request: NextRequest) {
     let hasMore = true;
     const filteredVideos: any[] = [];
     let fetchCount = 0;
-    const MAX_FETCH_ATTEMPTS = 6; // Capped to prevent excessive external requests
+    const MAX_FETCH_ATTEMPTS = 6;
+    // Track which variation strings we've already tried to avoid re-querying
+    const usedVariationStrings = new Set<string>([query]);
 
-    // Improved fetching logic: if we don't have enough videos after filtering, fetch more aggressively
     while (filteredVideos.length < limit && hasMore && fetchCount < MAX_FETCH_ATTEMPTS) {
       const batchResults: any[] = [];
       
       if (currentToken) {
-        // Fetch more via token
+        // Fetch more via continuation token
         const result = await searchVideosWithContinuation(query, currentToken, region, language, limit);
         batchResults.push(...result.videos);
         currentToken = result.continuationToken;
         hasMore = result.hasMore;
-      } else if (fetchCount === 0) {
-        // Initial multi-query search
+      } else if (!isPaginationRequest && fetchCount === 0) {
+        // ═══════════════════════════════════════════════════════
+        // FIRST PAGE: Initial multi-query search
+        // ═══════════════════════════════════════════════════════
         for (const sQ of searchQueries) {
+          usedVariationStrings.add(sQ);
           try {
             const result = await searchVideosWithContinuation(sQ, undefined, region, language, limit);
             batchResults.push(...result.videos);
@@ -106,42 +193,51 @@ export async function GET(request: NextRequest) {
             console.error(`Search query "${sQ}" failed:`, err);
           }
         }
-      } else if (fetchCount > 0 && (currentToken === null || !hasMore)) {
-        // No continuation token — use query variations to find more unique videos
-        const allVariations = enhanceQueryForAllowedContent(query, config.allowedCategories);
-        // Shuffle and pick variations we haven't used yet
-        const usedVariations = new Set([query]);
-        if (token === undefined || token === null) {
-          // Initial load already used the main query + category terms
-          // For pagination, use completely different search terms
-          const pageVariations = [
-            ...allVariations.filter(v => !usedVariations.has(v)),
-            `${query} part ${page}`,
-            `${query} ${page}`,
-          ];
-          const variation = pageVariations[Math.floor(Math.random() * pageVariations.length)];
+      } else {
+        // ═══════════════════════════════════════════════════════
+        // PAGINATION / EXHAUSTED: Query variation strategy
+        // ═══════════════════════════════════════════════════════
+        const variations = generatePaginationVariations(
+          query, 
+          isPaginationRequest ? page : fetchCount + 1, 
+          fetchCount, 
+          config.allowedCategories
+        );
+
+        // Filter out variations we've already tried
+        const freshVariations = variations.filter(v => !usedVariationStrings.has(v));
+
+        if (freshVariations.length === 0) {
+          hasMore = false;
+          break;
+        }
+
+        // Try up to 3 variations per fetch attempt (parallel for speed)
+        const variationsToTry = freshVariations.slice(0, 3);
+        for (const variation of variationsToTry) {
+          usedVariationStrings.add(variation);
           try {
             const result = await searchVideosWithContinuation(variation, undefined, region, language, limit);
             batchResults.push(...result.videos);
-            // Fallback providers never return real continuation tokens, so keep trying
-            if (result.videos.length > 0) {
-              hasMore = true; // Signal that more might be available via variations
-            } else {
-              hasMore = false;
-            }
+            if (batchResults.length >= limit) break;
           } catch (err) {
-            hasMore = false;
+            console.error(`Variation "${variation}" failed:`, err);
           }
-        } else {
+        }
+
+        // Keep trying if we got results but not enough
+        if (batchResults.length > 0) {
+          hasMore = true;
+        } else if (freshVariations.length <= 3) {
+          // No more fresh variations to try
           hasMore = false;
         }
-      } else {
-        hasMore = false;
       }
 
-      // Filter the new batch
+      // Filter the new batch: skip excluded IDs, dedup, and content-filter
       for (const video of batchResults) {
         if (allResults.has(video.id)) continue;
+        if (excludeIds.has(video.id)) continue;
         allResults.set(video.id, video);
 
         const filterResult = filterContent(
@@ -163,20 +259,17 @@ export async function GET(request: NextRequest) {
       }
 
       fetchCount++;
-      if (!currentToken && fetchCount > 0 && batchResults.length === 0) hasMore = false;
+      // Stop if no new raw results and no token
+      if (!currentToken && batchResults.length === 0 && fetchCount > 1) hasMore = false;
     }
 
-    // Determine if there are truly more results
-    // Even without a continuation token, we can signal hasMore if we got enough videos
-    // and there might be more via query variations
     const gotEnough = filteredVideos.length >= limit;
     const hasContinuation = !!currentToken;
-    const canTryMore = !gotEnough && fetchCount < MAX_FETCH_ATTEMPTS;
 
     return NextResponse.json({ 
       videos: filteredVideos.slice(0, limit), 
       continuationToken: currentToken,
-      hasMore: hasContinuation || canTryMore || (gotEnough && filteredVideos.length >= limit),
+      hasMore: hasContinuation || gotEnough || (filteredVideos.length > 0 && fetchCount < MAX_FETCH_ATTEMPTS),
       page,
       query: query,
       totalFetched: filteredVideos.length,

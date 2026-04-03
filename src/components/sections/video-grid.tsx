@@ -91,6 +91,10 @@ export default function VideoGrid({
   const [lastFetchedPage, setLastFetchedPage] = useState(0);
   const preloadingRef = useRef<number | null>(null);
 
+  // Ref to access current videos list inside callbacks without stale closures
+  const videosRef = useRef<Video[]>([]);
+  videosRef.current = videos;
+
   // Active fetch controller — abort stale requests
   const fetchControllerRef = useRef<AbortController | null>(null);
 
@@ -132,6 +136,13 @@ export default function VideoGrid({
       url.searchParams.set("limit", String(limit));
       url.searchParams.set("page", page.toString());
 
+      // When loading more, pass existing video IDs so API can exclude them
+      // This dramatically improves pagination — the API won't return duplicates
+      if (append && videosRef.current.length > 0) {
+        const existingIds = videosRef.current.map(v => v.id).join(',');
+        url.searchParams.set("excludeIds", existingIds);
+      }
+
       const response = await fetch(url.toString(), { signal: controller.signal });
       if (!response.ok) throw new Error(t("error_fetching_video") || "Failed to load videos");
 
@@ -141,9 +152,18 @@ export default function VideoGrid({
       setVideos(prev => {
         let updated;
         if (append) {
+          // Safety-net dedup: API should have excluded these via excludeIds,
+          // but we dedup client-side too in case of edge cases
           const existingIds = new Set(prev.map(v => v.id));
           const uniqueNewVideos = newVideos.filter(v => !existingIds.has(v.id));
           updated = [...prev, ...uniqueNewVideos];
+          
+          // If very few new videos were added, the API might be exhausted.
+          // Don't signal hasMore if we got nothing new.
+          if (uniqueNewVideos.length === 0 && newVideos.length > 0) {
+            // All returned videos were duplicates — signal exhaustion
+            setTimeout(() => setHasMore(false), 0);
+          }
         } else {
           const seen = new Set();
           updated = newVideos.filter(v => {
@@ -153,12 +173,15 @@ export default function VideoGrid({
           });
         }
 
-        searchCache[cacheKey] = {
-          videos: updated,
-          tokens: { ...pageTokens.current },
-          timestamp: Date.now(),
-        };
-        pruneSearchCache();
+        // Only cache non-append results (append grows over time)
+        if (!append) {
+          searchCache[cacheKey] = {
+            videos: updated,
+            tokens: { ...pageTokens.current },
+            timestamp: Date.now(),
+          };
+          pruneSearchCache();
+        }
         return updated;
       });
 

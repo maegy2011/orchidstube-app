@@ -661,3 +661,27 @@ Stage Summary:
 - ESLint: 0 errors
 - Dev server: compiles successfully, /settings returns 200
 - Files modified: LoadingModeSection.tsx, en.ts, ar.ts
+---
+Task ID: 1
+Agent: main
+Task: Fix Load More loading only 1 video instead of videosPerPage amount
+
+Work Log:
+- Analyzed root cause: API's while loop enters `fetchCount === 0` initial search branch for ALL pages when no continuation token exists (youtubei.js disabled), returning same results as page 1. Client deduplicates → 0-1 new unique videos.
+- Rewrote `/home/z/my-project/src/app/api/videos/search/route.ts`:
+  - Added `isPaginationRequest` flag (`page > 1 && !token`) to skip initial search for pagination
+  - Added `seededShuffle()` for deterministic page-seeded variation selection
+  - Added `generatePaginationVariations()` with 5 strategies: category terms, allowed-category terms, qualifiers (EN+AR), numeric suffixes, "part/episode/حلقة N" patterns
+  - Added `excludeIds` URL parameter to pre-filter known video IDs server-side
+  - Added `usedVariationStrings` tracking to avoid re-querying same variations
+  - Tries up to 3 variations per fetch attempt (vs old 1) for more unique results
+- Updated `/home/z/my-project/src/components/sections/video-grid.tsx`:
+  - Added `videosRef` to access current videos without stale closures
+  - When `append=true`, passes all existing video IDs as `excludeIds` to API
+  - Added exhaustion detection: if all returned videos were duplicates, signals `hasMore=false`
+  - Only caches non-append results (append grows over time, caching wastes memory)
+
+Stage Summary:
+- Both bugs fixed: Load More now loads full `videosPerPage` new unique videos
+- API verified: page 2 with excludeIds returns 6 completely different videos (0 overlap)
+- ESLint 0 errors, compilation clean, homepage 200
