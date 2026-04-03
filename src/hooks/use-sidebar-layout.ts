@@ -23,8 +23,7 @@ export function useSidebarLayout(isOpen: boolean) {
   const marginClass = useMemo(() => {
     if (!mounted || !isDesktop) return "";
 
-    const isRTL = direction === "rtl";
-    const marginSide = isRTL ? "lg:mr-" : "lg:ml-";
+    const marginSide = "lg:ms-";
 
     switch (sidebarMode) {
       case "hidden":

@@ -4,7 +4,6 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   X,
   ChevronRight,
-  ChevronLeft,
   ChevronDown,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
@@ -36,17 +35,12 @@ const SectionHeader = React.memo(function SectionHeader({
   label,
   isCollapsed: sectionCollapsed,
   onToggle,
-  isRTL,
 }: {
   sectionIcon: React.ElementType;
   label: string;
   isCollapsed: boolean;
   onToggle: () => void;
-  isRTL: boolean;
 }) {
-  const ChevronIcon = sectionCollapsed
-    ? (isRTL ? ChevronLeft : ChevronRight)
-    : ChevronDown;
 
   return (
     <button
@@ -66,7 +60,11 @@ const SectionHeader = React.memo(function SectionHeader({
         animate={{ rotate: sectionCollapsed ? 0 : 0 }}
         transition={{ duration: 0.2 }}
       >
-        <ChevronIcon className="w-3.5 h-3.5 opacity-40 group-hover:opacity-70 transition-opacity" />
+        {sectionCollapsed ? (
+          <ChevronRight className="w-3.5 h-3.5 opacity-40 group-hover:opacity-70 transition-opacity rtl:rotate-180" />
+        ) : (
+          <ChevronDown className="w-3.5 h-3.5 opacity-40 group-hover:opacity-70 transition-opacity" />
+        )}
       </motion.div>
     </button>
   );
@@ -436,7 +434,6 @@ export default function SidebarGuide({
                           label={t(section.labelKey as any) || section.labelKey}
                           isCollapsed={isSectionCollapsed}
                           onToggle={() => toggleSection(section.key)}
-                          isRTL={isRTL}
                         />
 
                         {/* Section items with collapse animation */}
@@ -494,7 +491,6 @@ export default function SidebarGuide({
               isDesktop={isDesktop}
               sidebarMode={sidebarMode}
               isCollapsed={isCollapsed}
-              isRTL={isRTL}
               onClose={onClose}
             />
           </motion.aside>

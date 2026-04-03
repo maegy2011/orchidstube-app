@@ -68,7 +68,7 @@ const Masthead = ({ onSearch, onMenuClick, externalLoading, searchQuery }: Masth
   // ═══════════════════════════════════════════════════════
 
   return (
-    <header className={`fixed ${headerTop} left-0 right-0 z-[8000] flex flex-col`}>
+    <header className={`fixed ${headerTop} inset-x-0 z-[8000] flex flex-col`}>
       <div className="flex items-center justify-between h-[64px] px-4 bg-gradient-to-b from-background/95 to-background/80 backdrop-blur-xl border-b border-border/50 select-none transition-all duration-300 shadow-sm">
       {/* Left side: Back, Menu, Logo */}
       <div className="flex items-center gap-2">

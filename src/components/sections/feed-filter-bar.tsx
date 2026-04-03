@@ -108,7 +108,7 @@ const FeedFilterBar = memo(function FeedFilterBar({ onCategoryChange }: { onCate
               exit={{ opacity: 0, x: direction === 'rtl' ? 10 : -10 }}
               className="absolute start-0 top-0 bottom-0 flex items-center z-20"
             >
-              <div className={`h-full w-20 bg-gradient-to-${direction === 'rtl' ? 'l' : 'r'} from-background via-background/80 to-transparent pointer-events-none`} />
+              <div className={cn("h-full w-20 from-background via-background/80 to-transparent pointer-events-none", direction === 'rtl' ? "bg-gradient-to-l" : "bg-gradient-to-r")} />
               <button
                 onClick={() => scroll(direction === 'rtl' ? 'right' : 'left')}
                 className="absolute start-0 p-2 hover:bg-muted rounded-full transition-all flex items-center justify-center bg-background shadow-md active:scale-90 border border-border"
@@ -150,7 +150,7 @@ const FeedFilterBar = memo(function FeedFilterBar({ onCategoryChange }: { onCate
               exit={{ opacity: 0, x: direction === 'rtl' ? -10 : 10 }}
               className="absolute end-0 top-0 bottom-0 flex items-center z-20"
             >
-              <div className={`h-full w-20 bg-gradient-to-${direction === 'rtl' ? 'r' : 'l'} from-background via-background/80 to-transparent pointer-events-none`} />
+              <div className={cn("h-full w-20 from-background via-background/80 to-transparent pointer-events-none", direction === 'rtl' ? "bg-gradient-to-r" : "bg-gradient-to-l")} />
               <button
                 onClick={() => scroll(direction === 'rtl' ? 'left' : 'right')}
                 className="absolute end-0 p-2 hover:bg-muted rounded-full transition-all flex items-center justify-center bg-background shadow-md active:scale-90 border border-border"

@@ -91,7 +91,7 @@ export const SearchBar = forwardRef<SearchBarHandle, SearchBarProps>(
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="fixed top-0 left-0 right-0 z-[9500] flex flex-col bg-background select-none h-screen overflow-hidden transition-all duration-300"
+              className="fixed top-0 inset-x-0 z-[9500] flex flex-col bg-background select-none h-screen overflow-hidden transition-all duration-300"
             >
               {/* Mobile search bar */}
               <div className="flex items-center h-[56px] gap-2 px-3 border-b border-border">

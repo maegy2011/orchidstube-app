@@ -968,3 +968,23 @@ Stage Summary:
 - Toggle switch knob now uses `inset-inline-start` for correct RTL behavior
 - Sidebar icons now direction-aware (PanelLeft → PanelRight in RTL)
 - Lint passes clean, dev server compiles, GET / returns 200
+---
+Task ID: 1
+Agent: Main
+Task: Fix UI direction for Header, Category/Chips bar, and Sidebar components
+
+Work Log:
+- Analyzed all 3 component groups: Header (masthead.tsx + sub-components), Feed Filter Bar, Sidebar (sidebar-guide + SidebarFooter + SidebarItem)
+- Fixed masthead.tsx: `left-0 right-0` → `inset-x-0`
+- Fixed SearchBar.tsx: `left-0 right-0` → `inset-x-0` (mobile search overlay)
+- Fixed feed-filter-bar.tsx: Replaced dynamic Tailwind class construction `bg-gradient-to-${direction === 'rtl' ? 'l' : 'r'}` with safe `cn()` pattern using full class names
+- Fixed use-sidebar-layout.ts: Replaced physical `lg:mr-`/`lg:ml-` with logical `lg:ms-` property
+- Fixed SidebarFooter.tsx: Removed `isRTL` prop, replaced hardcoded Arabic/English text with `t("sidebarExpanded")`/`t("sidebarCollapsed")` translations, replaced conditional icon rendering (PanelRightOpen/PanelLeftOpen) with single icons + `rtl:rotate-180`
+- Fixed sidebar-guide.tsx: Removed `isRTL` prop from SectionHeader, replaced conditional ChevronLeft/ChevronRight with ChevronRight + `rtl:rotate-180`, removed unused `ChevronLeft` import, removed `isRTL` prop from SidebarFooter call
+
+Stage Summary:
+- 6 files modified: masthead.tsx, SearchBar.tsx, feed-filter-bar.tsx, use-sidebar-layout.ts, SidebarFooter.tsx, sidebar-guide.tsx
+- All physical CSS properties migrated to logical properties in these components
+- Direction-aware icons now use `rtl:rotate-180` class instead of conditional rendering
+- Hardcoded text replaced with i18n translations
+- Lint passes cleanly, dev server compiles successfully

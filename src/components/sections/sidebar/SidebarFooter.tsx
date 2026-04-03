@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, ChevronRight, ChevronLeft } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n-context";
 
 // ═══════════════════════════════════════════════════════
 // Sidebar Footer Props
@@ -12,7 +13,6 @@ export interface SidebarFooterProps {
   isDesktop: boolean;
   sidebarMode: string;
   isCollapsed: boolean;
-  isRTL: boolean;
   onClose?: () => void;
 }
 
@@ -24,9 +24,10 @@ export function SidebarFooter({
   isDesktop,
   sidebarMode,
   isCollapsed,
-  isRTL,
   onClose,
 }: SidebarFooterProps) {
+  const { t } = useI18n();
+
   // Only show on desktop, non-overlay, non-hidden mode
   if (isOverlay || !isDesktop || sidebarMode === "hidden") {
     return null;
@@ -43,27 +44,17 @@ export function SidebarFooter({
         )}
         title={
           isCollapsed
-            ? isRTL
-              ? "عرض القائمة الكاملة"
-              : "Show full guide"
-            : isRTL
-              ? "تصغير القائمة"
-              : "Collapse"
+            ? (t("sidebarExpanded") || "Full Sidebar")
+            : (t("sidebarCollapsed") || "Mini Sidebar")
         }
       >
         {isCollapsed ? (
-          <>
-            {isRTL ? <PanelRightOpen className="w-5 h-5" /> : <PanelLeftOpen className="w-5 h-5" />}
-          </>
+          <PanelLeftOpen className="w-5 h-5 rtl:rotate-180" />
         ) : (
           <>
-            {isRTL ? <PanelRightClose className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
-            <span>{isRTL ? "تصغير القائمة" : "Collapse"}</span>
-            {isRTL ? (
-              <ChevronRight size={16} className="ms-auto" />
-            ) : (
-              <ChevronLeft size={16} className="ms-auto" />
-            )}
+            <PanelLeftClose className="w-5 h-5 rtl:rotate-180" />
+            <span>{t("sidebarCollapsed") || "Mini Sidebar"}</span>
+            <ChevronLeft size={16} className="ms-auto rtl:rotate-180" />
           </>
         )}
       </button>
