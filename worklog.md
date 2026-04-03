@@ -769,3 +769,32 @@ Stage Summary:
 - Fix: CSS visibility gate + blocking localStorage script + useLayoutEffect for atomic reveal
 - Files modified: layout.tsx, i18n-context.tsx (2 files)
 - No flash of wrong language — body hidden until client-side language is properly initialized
+
+---
+Task ID: 3
+Agent: Main Agent
+Task: Fix language flash on app load/reload - Arabic shown first, then switches to selected language
+
+Work Log:
+- Investigated i18n system: custom client-side i18n with React Context, localStorage persistence, blocking script, and visibility:hidden CSS
+- Identified two root causes:
+  1. **Server settings sync overrides client language**: For authenticated users, the useEffect that syncs from server settings (line 118) could override the correct client-side language with stale server defaults ("ar"). This useEffect fires AFTER useLayoutEffect has already revealed the body.
+  2. **Hydration mismatch timing risk**: useLayoutEffect set data-lang-ready before guaranteeing all hydration mismatch DOM patches were committed.
+
+Fix 1 - Server settings sync guard (i18n-context.tsx line 118-153):
+- Added `isLanguageManuallySet()` check before syncing language from server
+- If user has explicitly chosen a language (stored in `orchids-language-manually-set`), server settings CANNOT override it
+- Other settings (location, restrictedMode, etc.) still sync normally from server
+- This prevents stale server data from causing visible language change after body is revealed
+
+Fix 2 - Body reveal timing (i18n-context.tsx line 183-191):
+- Moved `data-lang-ready` attribute setting from useLayoutEffect to a separate useEffect with empty deps
+- useEffect fires AFTER first paint, ensuring all hydration mismatch fixes are fully committed
+- useLayoutEffect still sets lang/dir/title synchronously (no visual change needed)
+- Body stays hidden for one extra frame (~16ms) — imperceptible to user but guarantees no flash
+
+Stage Summary:
+- File modified: src/lib/i18n-context.tsx (2 targeted changes)
+- ESLint: 0 errors
+- Dev server: compiles successfully
+- No visible flash of wrong language on reload

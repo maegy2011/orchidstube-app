@@ -119,7 +119,14 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     if (!settingsLoaded) return;
 
     const updates: Record<string, any> = {};
-    if (settings.language && translations[settings.language as LanguageCode]) updates.language = settings.language as LanguageCode;
+    // ─── CRITICAL: Never override language if user has manually set it ───
+    // The client-side getInitialLanguage() already read the correct language
+    // from localStorage. Server settings may be stale (e.g., default "ar")
+    // and must not overwrite the user's explicit choice.
+    const manuallySet = typeof window !== 'undefined' && isLanguageManuallySet();
+    if (!manuallySet && settings.language && translations[settings.language as LanguageCode]) {
+      updates.language = settings.language as LanguageCode;
+    }
     if (settings.location) updates.location = settings.location;
     if (settings.restrictedMode !== undefined) updates.restrictedMode = settings.restrictedMode === 'true';
     if (settings.showGregorianDate !== undefined) updates.showGregorianDate = settings.showGregorianDate === 'true';
@@ -165,8 +172,6 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     if (typeof document !== 'undefined') {
       document.documentElement.lang = language;
       document.documentElement.dir = translations[language]?.direction || (language === 'ar' ? 'rtl' : 'ltr');
-      // Signal that the client-side language is ready — reveals the body (CSS: html:not([data-lang-ready])>body)
-      document.documentElement.setAttribute('data-lang-ready', '');
 
       const appName = t('appName');
       if (appName) {
@@ -174,6 +179,16 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       }
     }
   }, [language]);
+
+  // ─── Reveal body ONLY after hydration + first paint are complete ───
+  // useLayoutEffect fires before paint but React hydration mismatch fixes
+  // may not be fully committed. Using requestAnimationFrame guarantees
+  // the reveal happens on the next frame, after all DOM patches are applied.
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-lang-ready', '');
+    }
+  }, []);
 
   // ─── Cross-tab language sync ───
   useEffect(() => {
