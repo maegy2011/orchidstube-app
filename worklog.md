@@ -1006,3 +1006,20 @@ Stage Summary:
 - Hardcoded Arabic text removed from date formatting
 - ArrowRight icons now use `rtl:` Tailwind variant classes instead of JS conditionals
 - Lint passes, dev server compiles successfully
+
+---
+Task ID: 3
+Agent: Main
+Task: Apply Watch page dir={direction} pattern to ALL pages
+
+Work Log:
+- Audited all 17 page files + AuthLayout for dir={direction} on root div
+- Found 8 pages already had it, 4 pages missing it, 4 auth pages using AuthLayout missing it
+- Added dir={direction} to: page.tsx (home), history/page.tsx, favorites/page.tsx, subscriptions/page.tsx
+- Fixed AuthLayout: added direction to useI18n destructure, added dir={direction} to root div (fixes signin, signup, forgot-password, reset-password)
+- Verified all 12 app pages + WatchDynamic + WatchSkeleton + WatchErrorStates + AuthLayout all have dir={direction}
+
+Stage Summary:
+- 5 files modified: page.tsx, history/page.tsx, favorites/page.tsx, subscriptions/page.tsx, auth-layout.tsx
+- Every page in the app now has dir={direction} on its root div, matching the Watch page pattern
+- Lint passes cleanly, dev server compiles successfully

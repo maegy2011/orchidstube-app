@@ -68,7 +68,7 @@ export default function FavoritesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground" dir={direction}>
       <Masthead onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       <SidebarGuide isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       

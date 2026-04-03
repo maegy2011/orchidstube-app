@@ -172,7 +172,7 @@ export default function Home() {
   const trendingQuery = t("education");
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col" dir={direction}>
       <Masthead
         searchQuery={searchQuery}
         onSearch={handleSearch}

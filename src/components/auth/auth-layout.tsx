@@ -22,14 +22,14 @@ export function AuthLayout({ children, title, description }: AuthLayoutProps) {
   const isSignIn = pathname === "/auth/signin";
   const isAuthPage = pathname === "/auth/signin" || pathname === "/auth/signup";
   const isResetFlow = pathname === "/auth/forgot-password" || pathname === "/auth/reset-password";
-  const { t } = useI18n();
+  const { t, direction } = useI18n();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background" dir={direction}>
       {/* ─── Auth Masthead ─── */}
       <header className="sticky top-0 z-[8000] flex items-center justify-between h-[56px] px-4 bg-gradient-to-b from-background/95 to-background/80 backdrop-blur-xl border-b border-border/50 select-none">
         {/* Left: Back + Menu */}

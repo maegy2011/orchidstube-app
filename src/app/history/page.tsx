@@ -108,7 +108,7 @@ export default function HistoryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" dir={direction}>
       <Masthead onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       <SidebarGuide isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
