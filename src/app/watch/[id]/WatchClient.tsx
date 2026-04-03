@@ -29,6 +29,7 @@ import { EyeProtection } from '@/components/ui/eye-protection';
 
 import type { WatchClientProps } from './types';
 import { formatDuration, extractHashtags, extractChapters } from './utils/format.tsx';
+import { isValidDateString } from './utils/time';
 import { ContentTab, CommentSort } from './utils/constants';
 import { useVideoPlayer } from './hooks/useVideoPlayer';
 import { useNotesManagement } from './hooks/useNotesManagement';
@@ -249,7 +250,7 @@ export default function WatchClient({
   const channelUrl = video?.channelId ? `https://www.youtube.com/channel/${video.channelId}` : null;
   const hasValidViews = video?.views && video.views !== '0';
   const hasValidLikes = video?.likes && video.likes !== '0';
-  const hasValidDate = video?.uploadDate && video.uploadDate.length > 0;
+  const hasValidDate = isValidDateString(video?.uploadDate);
   const hasValidDuration = video?.duration && video.duration > 0;
   const hasValidSubscribers = video?.channelSubscribers && video.channelSubscribers.length > 0 && video.channelSubscribers !== '0';
 

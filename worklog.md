@@ -1263,3 +1263,33 @@ Stage Summary:
 - Incognito mode blocks playlist additions
 - All text translated in 10 languages (en, ar, fr, es, zh, ja, it, de, pt, tr)
 - Responsive design with RTL support
+---
+Task ID: 9
+Agent: Main Agent
+Task: Fix Invalid Date at video watching page
+
+Work Log:
+- Investigated the video watch page date display chain: YouTube APIs → youtube-details.ts → /api/videos/[id] → useVideoData hook → VideoInfoSection → formatDate()
+- Identified root cause: `uploadDate` field from YouTube APIs can be:
+  - Valid ISO dates → `new Date()` works fine
+  - Relative strings like "3 days ago", "2 weeks ago" → `new Date("3 days ago")` = Invalid Date
+  - Empty strings → already filtered by hasValidDate check
+- Found `formatDate()` in `utils/time.ts` blindly called `new Date()` without validation
+- Found `hasValidDate` in `WatchClient.tsx` only checked `video?.uploadDate && video.uploadDate.length > 0` — passes for unparseable strings
+
+- Fixed `src/app/watch/[id]/utils/time.ts`:
+  - Added null/undefined/type guard to `formatDate()`
+  - Added regex pattern to detect relative date strings (e.g. "3 days ago", "yesterday", "just now") — returned as-is since they're already human-readable
+  - Added `isNaN(date.getTime())` validation after `new Date()` — falls back to raw string instead of showing "Invalid Date"
+  - Added new `isValidDateString()` helper function that validates dates the same way (used by hasValidDate)
+
+- Fixed `src/app/watch/[id]/WatchClient.tsx`:
+  - Imported `isValidDateString` from `./utils/time`
+  - Replaced naive `video?.uploadDate && video.uploadDate.length > 0` check with `isValidDateString(video?.uploadDate)`
+
+Stage Summary:
+- 2 files modified: utils/time.ts, WatchClient.tsx
+- formatDate() now handles: valid dates (formatted with locale), relative strings (shown as-is), unparseable strings (shown raw), empty/null (hidden)
+- hasValidDate now properly rejects unparseable date strings
+- ESLint: 0 errors
+- Dev server: compiles successfully
