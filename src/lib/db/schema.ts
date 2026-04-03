@@ -107,6 +107,30 @@ export const deniedVideos = sqliteTable('denied_videos', {
   uniqueIndex('denied_videos_user_video').on(table.userId, table.videoId),
 ]);
 
+export const playlists = sqliteTable("playlists", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  thumbnail: text("thumbnail"),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const playlistItems = sqliteTable("playlist_items", {
+  id: text("id").primaryKey(),
+  playlistId: text("playlist_id").notNull().references(() => playlists.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  videoId: text("video_id").notNull(),
+  title: text("title").notNull(),
+  thumbnail: text("thumbnail"),
+  channelName: text("channel_name"),
+  duration: text("duration"),
+  addedAt: integer("added_at", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [
+  uniqueIndex("playlist_items_playlist_video").on(table.playlistId, table.videoId),
+]);
+
 export const userSettings = sqliteTable("user_settings", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),

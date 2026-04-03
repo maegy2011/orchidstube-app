@@ -1094,3 +1094,172 @@ Stage Summary:
 - Mask icon appears as amber badge on user avatar when incognito mode is active
 - Mask icon also used in the incognito banner and dropdown toggle
 - Lint passes cleanly, dev server compiles successfully
+---
+## Task ID: usePlaylists-hook - main
+### Work Task
+Create `src/hooks/usePlaylists.ts` — a React hook that manages playlists following the exact same dual-mode pattern as `useFavorites.ts` and `useWatchLater.ts`.
+
+### Work Summary
+Created `/home/z/my-project/src/hooks/usePlaylists.ts` with the following implementation:
+
+**Exported types:**
+- `Playlist` — playlist metadata (id, name, description, thumbnail, videoCount, createdAt, updatedAt)
+- `PlaylistItem` — individual video in a playlist (id, playlistId, videoId, title, thumbnail, channelName, duration, addedAt)
+
+**Hook pattern (matching useFavorites/useWatchLater):**
+- Uses `useUser()` for `userId` and `isAuthenticated`
+- Uses `useIncognito()` to block `addToPlaylist` when incognito
+- Authenticated mode: fetches from `/api/playlists` API; all mutations go through API endpoints (`/api/playlists`, `/api/playlists/items`)
+- Unauthenticated mode: uses localStorage with key `orchids-playlists`, format `{ playlists, items: Record<playlistId, PlaylistItem[]> }`
+- AbortController cleanup on unmount/auth change
+- Optimistic updates for all mutations (state updates immediately, API calls fire-and-forget)
+
+**Returned functions:**
+- `createPlaylist(name, description?)` — returns the new Playlist optimistically, persists via POST
+- `updatePlaylist(id, updates)` — updates name/description/thumbnail, persists via PUT
+- `deletePlaylist(id)` — removes from state + localStorage items, persists via DELETE
+- `addToPlaylist(playlistId, video)` — checks duplicates, increments videoCount, blocked by incognito
+- `removeFromPlaylist(playlistId, videoId)` — decrements videoCount, persists via DELETE
+- `isInPlaylist(playlistId, videoId)` — checks itemsMap for the combo
+- `getPlaylistsForVideo(videoId)` — returns all playlists containing the videoId
+- `refreshPlaylist(id)` — re-fetches single playlist + items from GET `/api/playlists/{id}`
+
+**Column mapping:** Server snake_case (`video_id`, `created_at`, `playlist_id`) → client camelCase (`videoId`, `createdAt`, `playlistId`) via `mapServerPlaylist` and `mapServerPlaylistItem` helpers.
+
+**Lint:** 0 errors. **Dev server:** compiles successfully.
+
+---
+## Task ID: playlists-ui - component-agent
+### Work Task
+Create 3 playlist UI components in `src/components/playlists/`: CreatePlaylistDialog, AddToPlaylistModal, and PlaylistCard.
+
+### Work Summary
+
+Created 3 new components following existing project patterns (shadcn/ui, lucide-react, framer-motion, useI18n hook):
+
+**1. `src/components/playlists/CreatePlaylistDialog.tsx` (115 lines)**
+- Dialog for creating new playlists with name (required) and description (optional) fields
+- Uses shadcn/ui Dialog, Button, Input, Textarea components
+- Default trigger: red rounded-full button with Plus icon, accepts custom trigger via props
+- Loading state with Loader2 spinner, Enter key submit, toast notification on success
+- Calls `createPlaylist()` from `usePlaylists` hook, resets form on success
+
+**2. `src/components/playlists/AddToPlaylistModal.tsx` (155 lines)**
+- Controlled dialog for adding/removing a video from playlists
+- Shows video preview thumbnail, playlist list with Check/Plus toggle icons
+- framer-motion AnimatePresence for smooth list animations
+- Empty state with ListPlus icon when no playlists exist
+- Calls `addToPlaylist()`/`removeFromPlaylist()` from `usePlaylists` hook
+- Toast notifications for add/remove actions
+
+**3. `src/components/playlists/PlaylistCard.tsx` (111 lines)**
+- Card component for playlist grid display, links to `/playlists/{id}`
+- Thumbnail with gradient fallback (ListVideo icon) or real image
+- Hover overlay with Play button and video count badge
+- Private indicator (Lock icon), 2-line clamp on playlist name
+- DropdownMenu (3-dots) with Edit and Delete options (delete uses destructive variant)
+- framer-motion whileHover scale animation
+- Uses logical CSS properties (start-*, end-*, me-*) for RTL support
+
+**Lint results**: 0 errors
+**Dev server**: Compiles successfully, all components render without errors
+
+#### Files Created
+- `src/components/playlists/CreatePlaylistDialog.tsx`
+- `src/components/playlists/AddToPlaylistModal.tsx`
+- `src/components/playlists/PlaylistCard.tsx`
+---
+## Task ID: 9 - main-agent
+### Work Task
+Create 2 playlist pages: Playlists Grid Page (`/playlists`) and Playlist Detail Page (`/playlists/[id]`)
+
+### Work Summary
+
+**Created `src/app/playlists/page.tsx` — Playlists Grid Page**:
+- Standard page layout: `<div dir={direction}>` → `<Masthead>` → `<SidebarGuide>` → `<main>` with `marginClass` and `mainPaddingTop`
+- Page header with ListVideo icon, title `t('playlists')`, playlist count subtitle, and CreatePlaylistDialog trigger
+- Loading state: centered spinner with CSS animation while `!isLoaded`
+- Empty state: icon + `t('noPlaylistsYet')` + `t('noPlaylistsYetDesc')` + CreatePlaylistDialog button
+- Responsive grid: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4`
+- Framer-motion stagger animation (containerVariants/itemVariants from favorites page pattern)
+- onDelete: confirm dialog → `deletePlaylist(id)` → toast `t('playlistDeleted')`
+- onEdit: `window.prompt` for rename → `updatePlaylist(id, { name })` → toast `t('playlistUpdated')`
+- Footer count badge matching favorites page style
+
+**Created `src/app/playlists/[id]/page.tsx` — Playlist Detail Page**:
+- Standard page layout with `dir={direction}`
+- Playlist ID from `useParams().id`
+- Fetches items via direct API call to `/api/playlists/${id}` with AbortController cleanup
+- Playlist header: back button (ArrowLeft → `/playlists`), thumbnail with gradient fallback, name, description, meta (video count, date, Lock icon), delete button
+- Video list items: index number, thumbnail with play overlay → `/watch/{videoId}`, title (2-line clamp), channel name, duration badge, remove button (X icon) → `removeFromPlaylist`
+- Framer-motion stagger animation for list items with slide-in from left
+- Empty state: `t('emptyPlaylist')` + `t('emptyPlaylistDesc')`
+- Playlist not found state with back-to-playlists link
+
+**Added 26 translation keys to en.ts and ar.ts**:
+- playlists, playlistsDesc, noPlaylistsYet, noPlaylistsYetDesc, newPlaylist, createPlaylist
+- playlistName, playlistNamePlaceholder, playlistDescription, playlistDescriptionPlaceholder
+- playlistCreated, playlistDeleted, playlistUpdated, editPlaylist, deletePlaylist, deletePlaylistConfirm
+- emptyPlaylist, emptyPlaylistDesc, playlistVideos, videoCount, removeVideo, videoRemoved
+- private, createdOn, renamePlaylist, renamePlaylistPlaceholder
+
+**Files created**: 2 (`src/app/playlists/page.tsx`, `src/app/playlists/[id]/page.tsx`)
+**Files modified**: 2 (`src/lib/translations/en.ts`, `src/lib/translations/ar.ts`)
+**ESLint**: 0 errors
+**Dev server**: compiles successfully
+---
+## Task ID: sidebar-playlists-i18n - main-agent
+### Work Task
+Add playlists to sidebar navigation and add playlist translation keys to all 10 languages in the translations file.
+
+### Work Summary
+**Task 1 — Sidebar Navigation (`sidebarData.ts`)**:
+- Added `ListPlus` import from `lucide-react`
+- Added playlists nav item between "watch-later" and "notes" in the library section: `{ id: "playlists", icon: ListPlus, labelKey: "playlists", href: "/playlists" }`
+
+**Task 2 — Translations (`translations.ts`)**:
+- Added 28 playlist translation keys to ALL 10 language sections (en, ar, fr, es, zh, ja, it, de, pt, tr)
+- Keys inserted before `hijri_month_1` in each language section
+- Keys added: playlists, newPlaylist, playlistName, playlistNamePlaceholder, playlistDescription, playlistDescriptionPlaceholder, createPlaylist, addToPlaylist, selectPlaylist, noPlaylistsYet, noPlaylistsYetDesc, createFirstPlaylist, deletePlaylist, editPlaylist, playlistVideos, videoCount, emptyPlaylist, emptyPlaylistDesc, playlistCreated, playlistDeleted, playlistUpdated, addedToPlaylist, removedFromPlaylist, alreadyInPlaylist, confirmDeletePlaylist, totalPlaylists, playlistBackTitle
+
+**Verification**:
+- ESLint: 0 errors
+- Dev server: compiles successfully, no errors in dev log
+- All 10 `playlists:` keys confirmed present via grep
+
+---
+Task ID: 3
+Agent: Main Agent (coordinated 5 subagents)
+Task: Implement custom private playlists feature
+
+Work Log:
+- Defined Drizzle ORM schema: `playlists` and `playlistItems` tables in `src/lib/db/schema.ts`
+- Pushed schema to SQLite database via `drizzle-kit generate` + `drizzle-kit migrate`
+- Created 3 API routes:
+  - `src/app/api/playlists/route.ts` — GET (list), POST (create), PUT (update), DELETE
+  - `src/app/api/playlists/[id]/route.ts` — GET single playlist with items
+  - `src/app/api/playlists/items/route.ts` — POST (add video), DELETE (remove video)
+- Created `src/hooks/usePlaylists.ts` — dual-mode hook (auth → API, unauth → localStorage)
+  - Exports: Playlist, PlaylistItem types
+  - Functions: createPlaylist, updatePlaylist, deletePlaylist, addToPlaylist, removeFromPlaylist, isInPlaylist, getPlaylistsForVideo, refreshPlaylist
+  - Incognito mode blocks add operations
+- Created 3 UI components:
+  - `src/components/playlists/CreatePlaylistDialog.tsx` — dialog for creating playlists
+  - `src/components/playlists/AddToPlaylistModal.tsx` — modal for adding videos to playlists
+  - `src/components/playlists/PlaylistCard.tsx` — card for grid display
+- Created 2 pages:
+  - `src/app/playlists/page.tsx` — grid of all playlists with create/edit/delete
+  - `src/app/playlists/[id]/page.tsx` — single playlist detail with video list
+- Added playlists to sidebar navigation (library section) in `sidebarData.ts`
+- Added 28 translation keys to all 10 languages in `translations.ts`
+- Lint passes with 0 errors, dev server compiles successfully
+
+Stage Summary:
+- Files created: 3 API routes, 1 hook, 3 components, 2 pages
+- Files modified: `src/lib/db/schema.ts`, `src/components/sections/sidebar/sidebarData.ts`, `src/lib/translations.ts`
+- Full CRUD support for playlists (create, read, update, delete)
+- Video management within playlists (add, remove, check existence)
+- Dual-mode architecture (authenticated → server, unauthenticated → localStorage)
+- Incognito mode blocks playlist additions
+- All text translated in 10 languages (en, ar, fr, es, zh, ja, it, de, pt, tr)
+- Responsive design with RTL support

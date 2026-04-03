@@ -22,6 +22,7 @@ import {
   Trophy,
   Film,
   MoreHorizontal,
+  ListPlus,
 } from "lucide-react";
 
 // ═══════════════════════════════════════════════════════
@@ -99,6 +100,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { id: "history", icon: History, labelKey: "history", href: "/history" },
       { id: "favorites", icon: Heart, labelKey: "favorites", href: "/favorites" },
       { id: "watch-later", icon: Clock, labelKey: "watchLater", href: "/watch-later" },
+      { id: "playlists", icon: ListPlus, labelKey: "playlists", href: "/playlists" },
       { id: "notes", icon: StickyNote, labelKey: "notes", href: "/notes" },
     ],
   },
