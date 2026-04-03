@@ -1293,3 +1293,58 @@ Stage Summary:
 - hasValidDate now properly rejects unparseable date strings
 - ESLint: 0 errors
 - Dev server: compiles successfully
+---
+Task ID: 10
+Agent: Main Agent
+Task: Fix channel image failed in video watching page (and across the app)
+
+Work Log:
+- Investigated all avatar image rendering across the codebase
+- Found the root cause: `<img>` tags for channel/comment avatars had no `onError` handler — when URLs failed (expired YouTube tokens, blocked external services), broken image icons appeared
+- Found `getDefaultChannelAvatar()` in youtube-utils.ts returned URLs to `ui-avatars.com` (external service) as fallback — also unreliable in sandboxed environments
+
+**Files created:**
+- `src/app/watch/[id]/components/SafeAvatar.tsx` — Reusable avatar component with:
+  - `onError` handler that switches to gradient initial on load failure
+  - Configurable `size` and `className` props
+  - Gradient initial fallback matching the app's design language
+
+**Files modified:**
+
+1. `src/app/watch/[id]/components/VideoInfoSection.tsx`:
+   - Added `avatarFailed` state + `onError` handler on channel avatar `<img>`
+   - Falls back to gradient initial when image fails
+
+2. `src/app/watch/[id]/components/OverviewTabContent.tsx`:
+   - Replaced raw `<img>` for comment avatars with `<SafeAvatar>` component
+   - Removed `ui-avatars.com` fallback URL
+
+3. `src/app/watch/[id]/components/CommentsSection.tsx`:
+   - Replaced raw `<img>` for comment avatars with `<SafeAvatar>` component
+   - Removed `ui-avatars.com` fallback URL
+
+4. `src/app/shorts/components/ShortsVideo.tsx`:
+   - Replaced raw `<img>` for channel avatar with `<SafeAvatar>` component
+
+5. `src/app/subscriptions/page.tsx`:
+   - Created inline `SubscriptionAvatar` component with `onError` fallback
+   - Red gradient initial matching the subscriptions page theme
+
+6. `src/components/sections/video-card.tsx`:
+   - Added `avatarFailed` state + conditional rendering
+   - Replaced `ui-avatars.com` onError redirect with gradient initial fallback
+
+7. `src/components/sections/compact-card.tsx`:
+   - Added `avatarFailed` state + conditional rendering
+   - Replaced `ui-avatars.com` onError redirect with gradient initial fallback
+
+8. `src/lib/youtube-utils.ts`:
+   - `getDefaultChannelAvatar()` now returns empty string instead of `ui-avatars.com` URL
+   - UI components handle empty avatar with gradient initials (no external dependency)
+
+Stage Summary:
+- 8 files modified, 1 file created
+- All avatar images across the app now have graceful fallback on load failure
+- Eliminated dependency on external `ui-avatars.com` service
+- ESLint: 0 errors
+- Dev server: compiles successfully

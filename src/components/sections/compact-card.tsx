@@ -29,6 +29,7 @@ const CompactCard = memo(function CompactCard({ video, index }: CompactCardProps
   const { t, direction } = useI18n();
   const { toggleWatchLater, isInWatchLater } = useWatchLater();
   const [imgError, setImgError] = useState(false);
+  const [avatarFailed, setAvatarFailed] = useState(false);
   const isSaved = isInWatchLater(video.id);
 
   const handleWatchLater = (e: React.MouseEvent) => {
@@ -112,18 +113,19 @@ const CompactCard = memo(function CompactCard({ video, index }: CompactCardProps
         <div className="flex gap-2.5 min-h-[44px]">
           <div className="shrink-0">
             <div className="w-7 h-7 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5 border border-border/50">
-              <img
-                src={
-                  video.channelAvatar ||
-                  `https://ui-avatars.com/api/?name=${encodeURIComponent(video.channelName)}&background=random&size=48`
-                }
-                alt={video.channelName}
-                className="w-full h-full object-cover"
-                loading="lazy"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(video.channelName)}&background=random&size=48`;
-                }}
-              />
+              {!avatarFailed && video.channelAvatar ? (
+                <img
+                  src={video.channelAvatar}
+                  alt={video.channelName}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                  onError={() => setAvatarFailed(true)}
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-primary/60 to-primary flex items-center justify-center">
+                  <span className="text-primary-foreground font-black text-[9px]">{video.channelName?.charAt(0)?.toUpperCase() || '?'}</span>
+                </div>
+              )}
             </div>
           </div>
           <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">

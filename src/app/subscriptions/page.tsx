@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import Masthead from "@/components/sections/masthead";
 import SidebarGuide from "@/components/sections/sidebar-guide";
@@ -9,6 +9,26 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useI18n } from "@/lib/i18n-context";
 import { useSidebarLayout } from "@/hooks/use-sidebar-layout";
+
+/** Channel avatar with onError fallback to initial */
+function SubscriptionAvatar({ src, title }: { src: string | null; title: string }) {
+  const [failed, setFailed] = useState(false);
+  if (!src || failed) {
+    return (
+      <div className="w-full h-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center text-white font-black text-3xl">
+        {title.charAt(0)}
+      </div>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt={title}
+      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+      onError={() => setFailed(true)}
+    />
+  );
+}
 import { useTopPadding } from "@/hooks/use-top-padding";
 
 interface Subscription {
@@ -200,13 +220,7 @@ export default function SubscriptionsPage() {
                       <div className="relative mb-6">
                         <div className="absolute -inset-1.5 bg-gradient-to-br from-red-600 to-purple-600 rounded-full blur opacity-0 group-hover:opacity-20 transition duration-500"></div>
                         <div className="relative w-24 h-24 rounded-full overflow-hidden bg-muted border-4 border-background shadow-md">
-                          {sub.channelThumbnail ? (
-                            <img src={sub.channelThumbnail} alt={sub.channelTitle} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center text-white font-black text-3xl">
-                              {sub.channelTitle.charAt(0)}
-                            </div>
-                          )}
+                          <SubscriptionAvatar src={sub.channelThumbnail} title={sub.channelTitle} />
                         </div>
                       </div>
                       

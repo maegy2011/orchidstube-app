@@ -97,6 +97,7 @@ export default function VideoInfoSection({
 }: VideoInfoSectionProps) {
   const [showMoreDropdown, setShowMoreDropdown] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
+  const [avatarFailed, setAvatarFailed] = useState(false);
 
   const handleCopyUrl = useCallback(() => {
     const url = `https://www.youtube.com/watch?v=${videoId}`;
@@ -178,8 +179,14 @@ export default function VideoInfoSection({
         {/* Channel info */}
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded-full overflow-hidden bg-muted shrink-0 shadow-sm ring-2 ring-border/30">
-            {video.channelAvatar ? (
-              <img src={video.channelAvatar} alt={video.channelName} className="w-full h-full object-cover" loading="lazy" />
+            {video.channelAvatar && !avatarFailed ? (
+              <img
+                src={video.channelAvatar}
+                alt={video.channelName}
+                className="w-full h-full object-cover"
+                loading="lazy"
+                onError={() => setAvatarFailed(true)}
+              />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-primary/60 to-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-black text-xs">{video.channelName?.charAt(0)?.toUpperCase() || '?'}</span>

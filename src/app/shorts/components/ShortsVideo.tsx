@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MediaPlayer, MediaProvider, MediaPlayerInstance } from '@vidstack/react';
 import '@vidstack/react/player/styles/base.css';
 import { Loader2 } from 'lucide-react';
+import SafeAvatar from '@/app/watch/[id]/components/SafeAvatar';
 
 export interface ShortVideo {
   id: string;
@@ -202,13 +203,12 @@ export default function ShortsVideo({
             >
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-full bg-primary/20 border border-white/15 overflow-hidden shrink-0">
-                    {video.channelAvatar ? (
-                      <img src={video.channelAvatar} alt={video.channelName} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-primary to-primary/60" />
-                    )}
-                  </div>
+                  <SafeAvatar
+                    src={video.channelAvatar}
+                    name={video.channelName}
+                    size={36}
+                    className="border border-white/15"
+                  />
                   <span className="font-semibold text-white text-xs truncate">{video.channelName}</span>
                   <button className="bg-white text-foreground text-[10px] font-bold px-3 py-1 rounded-full hover:bg-white/90 transition-colors active:scale-95">
                     {t('subscribe')}

@@ -10,6 +10,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import type { ContentTab, CommentSort } from '../utils/constants';
+import SafeAvatar from './SafeAvatar';
 
 interface OverviewTabContentProps {
   t: (key: any) => string;
@@ -71,11 +72,10 @@ export default function OverviewTabContent({
                 transition={{ delay: idx * 0.03 }}
                 className="flex gap-3 p-3 rounded-xl bg-muted/30 border border-border/40 hover:bg-muted/50 transition-all hover:translate-y-[-1px]"
               >
-                <img
-                  src={comment.authorAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.authorName)}&background=random`}
-                  alt=""
-                  className="w-9 h-9 rounded-full shrink-0 bg-muted ring-1 ring-border/50"
-                  loading="lazy"
+                <SafeAvatar
+                  src={comment.authorAvatar}
+                  name={comment.authorName}
+                  size={36}
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">

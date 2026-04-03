@@ -17,11 +17,8 @@ export function formatViews(views: string | number): string {
   return num.toLocaleString();
 }
 
-// Generate a default avatar URL based on channel name
-export function getDefaultChannelAvatar(channelName: string): string {
-  if (!channelName) return '';
-  const initial = channelName.charAt(0).toUpperCase();
-  const bgColors = ['FF6B6B', '4ECDC4', '45B7D1', '96CEB4', 'FFEAA7', 'DDA0DD', '98D8C8', 'F7DC6F'];
-  const colorIndex = channelName.length % bgColors.length;
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(channelName)}&background=${bgColors[colorIndex]}&color=fff&size=100`;
+// Generate a default avatar — returns empty string so the UI can show a gradient initial fallback.
+// Previously this returned a ui-avatars.com URL which is an external dependency that can fail.
+export function getDefaultChannelAvatar(_channelName?: string): string {
+  return '';
 }

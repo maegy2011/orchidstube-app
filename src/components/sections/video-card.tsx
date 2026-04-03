@@ -36,6 +36,7 @@ const VideoCard = memo(function VideoCard({
 }: VideoCardProps) {
   const { t, direction } = useI18n();
   const [imgError, setImgError] = useState(false);
+  const [avatarFailed, setAvatarFailed] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
 
   const viewsText = React.useMemo(() => {
@@ -154,15 +155,19 @@ const VideoCard = memo(function VideoCard({
           {/* Channel avatar */}
           <div className="shrink-0 mt-0.5">
             <div className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5 border-2 border-border/60 hover:border-primary/40 transition-colors duration-300">
-              <img
-                src={video.channelAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(video.channelName)}&background=random&size=64`}
-                alt={video.channelName}
-                className="w-full h-full object-cover"
-                loading="lazy"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(video.channelName)}&background=random&size=64`;
-                }}
-              />
+              {!avatarFailed && video.channelAvatar ? (
+                <img
+                  src={video.channelAvatar}
+                  alt={video.channelName}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                  onError={() => setAvatarFailed(true)}
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-primary/60 to-primary flex items-center justify-center">
+                  <span className="text-primary-foreground font-black text-xs">{video.channelName?.charAt(0)?.toUpperCase() || '?'}</span>
+                </div>
+              )}
             </div>
           </div>
 
