@@ -12,9 +12,10 @@ import { useI18n } from '@/lib/i18n-context';
 import { useSidebarLayout } from '@/hooks/use-sidebar-layout';
 import { useTopPadding } from '@/hooks/use-top-padding';
 
-function formatDate(dateString: string): string {
+function formatDate(dateString: string, language: string): string {
   const date = new Date(dateString);
-  return date.toLocaleDateString('ar-SA', {
+  const locale = language === 'ar' ? 'ar-SA' : language === 'zh' ? 'zh-CN' : language === 'ja' ? 'ja-JP' : language === 'pt' ? 'pt-BR' : `${language}-${language.toUpperCase()}`;
+  return date.toLocaleDateString(locale, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -23,7 +24,7 @@ function formatDate(dateString: string): string {
 
 export default function FavoritesPage() {
   const { getAllFavorites, removeFavorite, isLoaded } = useFavorites();
-  const { t, direction } = useI18n();
+  const { t, direction, language } = useI18n();
   const [searchQuery, setSearchQuery] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const mainPaddingTop = useTopPadding();
@@ -118,7 +119,7 @@ export default function FavoritesPage() {
               <div className="flex flex-col items-center justify-center py-40 space-y-4">
                 <div className="relative">
                   <div className="w-12 h-12 border-4 border-red-100 rounded-full"></div>
-                  <div className="absolute top-0 left-0 w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="absolute inset-0 w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
                 </div>
                 <p className="text-muted-foreground text-sm font-medium animate-pulse tracking-wide">{t("loadingFavorites")}</p>
               </div>
@@ -140,7 +141,7 @@ export default function FavoritesPage() {
                   className="inline-flex items-center gap-3 px-10 py-4 bg-red-600 text-white rounded-[1.25rem] font-bold hover:bg-red-700 active:scale-95 transition-all shadow-xl shadow-red-600/20 group"
                 >
                   {t("discoverVideos")}
-                  <ArrowRight size={20} className={`${direction === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'} transition-transform`} />
+                  <ArrowRight size={20} className="rtl:rotate-180 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
                 </Link>
               </motion.div>
             ) : filteredFavorites.length === 0 ? (
@@ -208,7 +209,7 @@ export default function FavoritesPage() {
                           <div className="flex items-center gap-1.5 text-muted-foreground">
                             <Calendar size={12} />
                             <span className="text-[10px] font-bold uppercase tracking-wider">
-                              {formatDate(favorite.addedAt)}
+                              {formatDate(favorite.addedAt, language)}
                             </span>
                           </div>
                           

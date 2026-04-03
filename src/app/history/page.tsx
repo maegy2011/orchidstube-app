@@ -38,7 +38,7 @@ export default function HistoryPage() {
     const parts = [];
 
     if (showGregorianDate) {
-      parts.push(getFormattedGregorianDate(language, date) + ' م');
+      parts.push(getFormattedGregorianDate(language, date));
     }
 
     if (showHijriDate) {
@@ -95,7 +95,7 @@ export default function HistoryPage() {
   };
 
   const itemVariants = {
-    hidden: { x: -20, opacity: 0 },
+    hidden: { x: direction === 'rtl' ? 20 : -20, opacity: 0 },
     visible: {
       x: 0,
       opacity: 1,
@@ -177,7 +177,7 @@ export default function HistoryPage() {
                   className="inline-flex items-center gap-3 px-10 py-4 bg-red-600 text-white rounded-[1.25rem] font-bold hover:bg-red-700 active:scale-95 transition-all shadow-xl shadow-red-600/20 group"
                 >
                   {t("discoverVideos")}
-                  <ArrowRight size={20} className={`${direction === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'} transition-transform`} />
+                  <ArrowRight size={20} className="rtl:rotate-180 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
                 </Link>
               </motion.div>
             ) : (

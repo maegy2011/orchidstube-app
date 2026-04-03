@@ -988,3 +988,21 @@ Stage Summary:
 - Direction-aware icons now use `rtl:rotate-180` class instead of conditional rendering
 - Hardcoded text replaced with i18n translations
 - Lint passes cleanly, dev server compiles successfully
+
+---
+Task ID: 2
+Agent: Main
+Task: Fix UI direction for History and Favorites pages
+
+Work Log:
+- Analyzed history/page.tsx and favorites/page.tsx for direction issues
+- Fixed history/page.tsx: `x: -20` animation → direction-aware `x: direction === 'rtl' ? 20 : -20`; removed hardcoded Arabic `' م'` suffix from Gregorian date; simplified ArrowRight conditional className to `rtl:rotate-180 group-hover:translate-x-1 rtl:group-hover:-translate-x-1`
+- Fixed favorites/page.tsx: `absolute top-0 left-0` → `inset-0` (spinner); hardcoded `'ar-SA'` locale → dynamic locale based on language; same ArrowRight simplification; added `language` to useI18n destructure
+
+Stage Summary:
+- 2 files modified: history/page.tsx, favorites/page.tsx
+- Physical CSS `left-0` → `inset-0`
+- Hardcoded locale → dynamic locale mapping
+- Hardcoded Arabic text removed from date formatting
+- ArrowRight icons now use `rtl:` Tailwind variant classes instead of JS conditionals
+- Lint passes, dev server compiles successfully
