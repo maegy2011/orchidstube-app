@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useUserSettings } from "@/hooks/useUserSettings";
 import { useUser } from "@/hooks/use-user";
 import { useI18n } from "@/lib/i18n-context";
+import { useIncognito } from "@/lib/incognito-context";
 
 // ═══════════════════════════════════════════════════════
 // Constants
@@ -91,6 +92,7 @@ export function useSearch({ onSearch, externalLoading = false, searchQuery: init
   const inputDirection = direction;
   const { settings, isLoaded: settingsLoaded, setSetting } = useUserSettings();
   const { isAuthenticated } = useUser();
+  const { isIncognito } = useIncognito();
 
   // ─── Sync with external searchQuery ───
   useEffect(() => {
@@ -125,6 +127,7 @@ export function useSearch({ onSearch, externalLoading = false, searchQuery: init
   }, [isAuthenticated, setSetting]);
 
   const addRecentSearch = useCallback((query: string) => {
+    if (isIncognito) return; // Don't record search history in incognito mode
     try {
       const existing = getRecentSearches();
       const filtered = existing.filter(s => s !== query);
@@ -132,7 +135,7 @@ export function useSearch({ onSearch, externalLoading = false, searchQuery: init
       persistRecentSearches(updated);
       recentSearches.current = updated;
     } catch {}
-  }, [getRecentSearches, persistRecentSearches]);
+  }, [getRecentSearches, persistRecentSearches, isIncognito]);
 
   const clearRecentSearches = useCallback(() => {
     persistRecentSearches([]);

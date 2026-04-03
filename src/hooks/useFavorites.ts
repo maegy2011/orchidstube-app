@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@/hooks/use-user';
+import { useIncognito } from '@/lib/incognito-context';
 
 export interface FavoriteItem {
   id: string;
@@ -42,6 +43,7 @@ function saveLocalDenied(items: string[]) {
 
 export function useFavorites() {
   const { userId, isAuthenticated } = useUser();
+  const { isIncognito } = useIncognito();
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [deniedVideos, setDeniedVideos] = useState<string[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -95,6 +97,7 @@ export function useFavorites() {
   }, [isAuthenticated, userId]);
 
   const addFavorite = useCallback((video: Omit<FavoriteItem, 'id' | 'addedAt'>) => {
+    if (isIncognito) return undefined; // Blocked in incognito mode
     const newFavorite: FavoriteItem = {
       ...video,
       id: crypto.randomUUID(),
@@ -121,7 +124,7 @@ export function useFavorites() {
       });
     }
     return newFavorite;
-  }, [isAuthenticated, userId]);
+  }, [isAuthenticated, userId, isIncognito]);
 
   const removeFavorite = useCallback((videoId: string) => {
     if (isAuthenticated && userId) {
@@ -156,6 +159,7 @@ export function useFavorites() {
   }, [favorites]);
 
   const denyVideo = useCallback((videoId: string) => {
+    if (isIncognito) return; // Blocked in incognito mode
     removeFavorite(videoId);
 
     if (isAuthenticated && userId) {

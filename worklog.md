@@ -685,3 +685,31 @@ Stage Summary:
 - Both bugs fixed: Load More now loads full `videosPerPage` new unique videos
 - API verified: page 2 with excludeIds returns 6 completely different videos (0 overlap)
 - ESLint 0 errors, compilation clean, homepage 200
+---
+Task ID: 2
+Agent: main
+Task: Implement Incognito Mode feature
+
+Work Log:
+- Created `src/lib/incognito-context.tsx` — React context provider with `isIncognito`, `setIncognito`, `toggleIncognito`. Persists to localStorage key `orchids-incognito`. Hydration-safe with mounted guard.
+- Added `IncognitoProvider` to layout.tsx provider hierarchy (between I18nProvider and WellBeingProvider)
+- Created `src/components/ui/incognito-banner.tsx` — Animated banner with EyeOff icon, amber gradient, dismiss button. Shows below masthead when active.
+- Updated `src/components/auth/user-menu.tsx`:
+  - Added incognito toggle with toggle switch UI in dropdown menu
+  - Amber badge on avatar when incognito is active
+  - Amber gradient on avatar initial circle when active
+- Updated `src/components/sections/masthead.tsx` — Added IncognitoBanner below the header bar
+- Gated all data writes:
+  - `useVideoData.ts`: History recording effect + subscription toggle blocked
+  - `use-search.ts`: addRecentSearch blocked
+  - `useWatchLater.ts`: addToWatchLater blocked
+  - `useFavorites.ts`: addFavorite + denyVideo blocked
+  - `useNotes.ts`: addNote + updateNote blocked
+  - `well-being-context.tsx`: Watch time tracking (section 7) + incrementShortsCount blocked
+  - `page.tsx`: All localStorage persistence (searchQuery, activeCategory, currentPage, scrollPosition) blocked
+- Added i18n translations (EN + AR): incognitoTurnOn, incognitoTurnOff, incognitoBanner, incognitoMode, incognitoModeDesc, incognitoBlocked
+
+Stage Summary:
+- Full incognito mode feature implemented across 12 files
+- ESLint 0 errors, all routes compile, homepage 200, settings 200, signin 200
+- 7 data write points gated; reading existing data still works (but won't be written back)

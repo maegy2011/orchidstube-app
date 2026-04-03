@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useI18n } from './i18n-context';
 import { useUserSettings } from '@/hooks/useUserSettings';
 import { useUser } from '@/hooks/use-user';
+import { useIncognito } from './incognito-context';
 
 export interface WellBeingLimits {
   dailyTimeLimit: number; // minutes, 0 means no limit
@@ -72,6 +73,7 @@ const LS_PIN_KEY = 'orchids-parental-pin-hash';
 export function WellBeingProvider({ children }: { children: ReactNode }) {
   const { t } = useI18n();
   const { isAuthenticated } = useUser();
+  const { isIncognito } = useIncognito();
   const [dailyWatchTime, setDailyWatchTime] = useState(0);
   const [dailyShortsCount, setDailyShortsCount] = useState(0);
   const [continuousWatchTime, setContinuousWatchTime] = useState(0);
@@ -223,8 +225,9 @@ export function WellBeingProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, [isAuthenticated, setSetting]);
 
-  // ─── 7. Track watch time (every 10 seconds, increments minute counter) ───
+  // ─── 7. Track watch time (disabled in incognito mode) ───
   useEffect(() => {
+    if (isIncognito) return; // No tracking in incognito mode
     const interval = setInterval(() => {
       const now = new Date();
       if (now.getMinutes() !== lastTrackedMinuteRef.current) {
@@ -247,7 +250,7 @@ export function WellBeingProvider({ children }: { children: ReactNode }) {
       }
     }, 10000);
     return () => clearInterval(interval);
-  }, [isAuthenticated, setSetting]);
+  }, [isAuthenticated, setSetting, isIncognito]);
 
   const setLimits = (newLimits: WellBeingLimits) => {
     setLimitsState(newLimits);
@@ -262,6 +265,7 @@ export function WellBeingProvider({ children }: { children: ReactNode }) {
   };
 
   const incrementShortsCount = useCallback(() => {
+    if (isIncognito) return; // No tracking in incognito mode
     setDailyShortsCount(prev => {
       const newVal = prev + 1;
 
@@ -276,7 +280,7 @@ export function WellBeingProvider({ children }: { children: ReactNode }) {
 
       return newVal;
     });
-  }, [isAuthenticated, setSetting]);
+  }, [isAuthenticated, setSetting, isIncognito]);
 
   const resetContinuousTime = useCallback(() => {
     setContinuousWatchTime(0);

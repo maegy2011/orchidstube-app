@@ -472,5 +472,12 @@ export const translationsAr = {
             totalItems: "إجمالي العناصر",
             refresh: "تحديث",
             noData: "لا توجد بيانات",
+            // وضع التصفح الخفي
+            incognitoTurnOn: "وضع التصفح الخفي",
+            incognitoTurnOff: "إنهاء التصفح الخفي",
+            incognitoBanner: "وضع التصفح الخفي مفعّل — لن يتم تسجيل نشاطك",
+            incognitoMode: "وضع التصفح الخفي",
+            incognitoModeDesc: "تصفح بدون حفظ السجل أو عمليات البحث أو المفضلات أو أي بيانات نشاط",
+            incognitoBlocked: "هذا الإجراء معطّل في وضع التصفح الخفي",
           } as const;
 

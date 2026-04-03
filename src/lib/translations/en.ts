@@ -472,4 +472,11 @@ export const translationsEn = {
   totalItems: "Total Items",
   refresh: "Refresh",
   noData: "No data",
+  // Incognito Mode
+  incognitoTurnOn: "Incognito Mode",
+  incognitoTurnOff: "Exit Incognito",
+  incognitoBanner: "Incognito mode is ON — your activity won't be tracked",
+  incognitoMode: "Incognito Mode",
+  incognitoModeDesc: "Browse without saving history, searches, favorites, or any activity data",
+  incognitoBlocked: "This action is disabled in Incognito Mode",
   } as const;

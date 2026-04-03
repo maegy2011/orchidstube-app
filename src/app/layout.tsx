@@ -9,6 +9,7 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SessionProvider } from "@/components/auth/session-provider";
 import { I18nProvider } from "@/lib/i18n-context";
+import { IncognitoProvider } from "@/lib/incognito-context";
 import { WellBeingProvider } from "@/lib/well-being-context";
 import { ClientLayout } from "@/components/ClientLayout";
 import { WellBeingGuard } from "@/components/ui/well-being-guard";
@@ -52,6 +53,7 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <I18nProvider>
+            <IncognitoProvider>
             <WellBeingProvider>
               <WellBeingGuard>
                 <ClientLayout />
@@ -77,6 +79,7 @@ export default async function RootLayout({
                 {children}
               </WellBeingGuard>
             </WellBeingProvider>
+            </IncognitoProvider>
           </I18nProvider>
         </ThemeProvider>
         </SessionProvider>

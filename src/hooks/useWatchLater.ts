@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@/hooks/use-user';
+import { useIncognito } from '@/lib/incognito-context';
 
 export interface WatchLaterItem {
   id: string;
@@ -29,6 +30,7 @@ function saveLocalWatchLater(items: WatchLaterItem[]) {
 
 export function useWatchLater() {
   const { userId, isAuthenticated } = useUser();
+  const { isIncognito } = useIncognito();
   const [watchLater, setWatchLater] = useState<WatchLaterItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSynced, setIsSynced] = useState(false);
@@ -71,6 +73,7 @@ export function useWatchLater() {
   }, [isAuthenticated, userId]);
 
   const addToWatchLater = useCallback((video: Omit<WatchLaterItem, 'id' | 'addedAt'>) => {
+    if (isIncognito) return undefined; // Blocked in incognito mode
     const newItem: WatchLaterItem = {
       ...video,
       id: crypto.randomUUID(),
@@ -96,7 +99,7 @@ export function useWatchLater() {
       });
     }
     return newItem;
-  }, [isAuthenticated, userId]);
+  }, [isAuthenticated, userId, isIncognito]);
 
   const removeFromWatchLater = useCallback((videoId: string) => {
     if (isAuthenticated && userId) {

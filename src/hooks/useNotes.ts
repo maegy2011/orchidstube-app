@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { VideoNote } from '@/lib/types';
 import { useUser } from '@/hooks/use-user';
+import { useIncognito } from '@/lib/incognito-context';
 
 const NOTES_STORAGE_KEY = 'youtube-video-notes';
 
@@ -20,6 +21,7 @@ function saveLocalNotes(items: VideoNote[]) {
 
 export function useNotes() {
   const { userId, isAuthenticated } = useUser();
+  const { isIncognito } = useIncognito();
   const [notes, setNotes] = useState<VideoNote[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSynced, setIsSynced] = useState(false);
@@ -64,6 +66,7 @@ export function useNotes() {
   }, [isAuthenticated, userId]);
 
   const addNote = useCallback((note: Omit<VideoNote, 'id' | 'createdAt' | 'updatedAt'>) => {
+    if (isIncognito) return undefined; // Blocked in incognito mode
     const newNote: VideoNote = {
       ...note,
       id: crypto.randomUUID(),
@@ -93,9 +96,10 @@ export function useNotes() {
       });
     }
     return newNote;
-  }, [isAuthenticated, userId]);
+  }, [isAuthenticated, userId, isIncognito]);
 
   const updateNote = useCallback((id: string, updates: Partial<VideoNote>) => {
+    if (isIncognito) return; // Blocked in incognito mode
     if (isAuthenticated && userId) {
       setNotes(prev => prev.map(note =>
         note.id === id

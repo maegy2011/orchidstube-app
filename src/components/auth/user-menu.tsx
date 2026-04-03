@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
-import { User, LogOut, Settings, Loader2, LogIn } from "lucide-react";
+import { User, LogOut, Settings, Loader2, LogIn, EyeOff, Eye } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n-context";
+import { useIncognito } from "@/lib/incognito-context";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +22,7 @@ export function UserMenu() {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const router = useRouter();
   const { t } = useI18n();
+  const { isIncognito, toggleIncognito } = useIncognito();
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
@@ -59,14 +61,31 @@ export function UserMenu() {
           aria-label="User menu"
         >
           {session.user.image ? (
-            <img
-              src={session.user.image}
-              alt={session.user.name || "User"}
-              className="w-8 h-8 rounded-full object-cover ring-2 ring-background shadow-md"
-            />
+            <div className="relative">
+              <img
+                src={session.user.image}
+                alt={session.user.name || "User"}
+                className="w-8 h-8 rounded-full object-cover ring-2 ring-background shadow-md"
+              />
+              {isIncognito && (
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center ring-2 ring-background">
+                  <EyeOff size={8} className="text-white" />
+                </div>
+              )}
+            </div>
           ) : (
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center text-white text-sm font-bold ring-2 ring-background shadow-md">
+            <div className={cn(
+              "w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold ring-2 ring-background shadow-md relative",
+              isIncognito
+                ? "bg-gradient-to-br from-amber-500 to-amber-700"
+                : "bg-gradient-to-br from-red-500 to-red-700"
+            )}>
               {userInitial}
+              {isIncognito && (
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center ring-2 ring-background">
+                  <EyeOff size={8} className="text-amber-900" />
+                </div>
+              )}
             </div>
           )}
           <span className="hidden lg:block max-w-[120px] truncate text-sm font-medium text-foreground">
@@ -104,6 +123,35 @@ export function UserMenu() {
             </div>
           </div>
         </DropdownMenuLabel>
+
+        <DropdownMenuSeparator />
+
+        {/* Incognito Mode Toggle */}
+        <DropdownMenuItem
+          className={cn(
+            "gap-3 px-4 py-2.5 text-sm cursor-pointer rounded-lg mx-1 my-0.5 transition-colors",
+            isIncognito
+              ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+              : "text-foreground"
+          )}
+          onSelect={toggleIncognito}
+        >
+          {isIncognito ? (
+            <EyeOff size={16} className="text-amber-500" />
+          ) : (
+            <Eye size={16} className="text-muted-foreground" />
+          )}
+          <span>{isIncognito ? t('incognitoTurnOff') : t('incognitoTurnOn')}</span>
+          <div className={cn(
+            "ml-auto w-8 h-[18px] rounded-full relative transition-colors",
+            isIncognito ? "bg-amber-500" : "bg-muted"
+          )}>
+            <div className={cn(
+              "absolute top-[2px] w-[14px] h-[14px] bg-white rounded-full shadow-sm transition-transform",
+              isIncognito ? "translate-x-[16px]" : "translate-x-[2px]"
+            )} />
+          </div>
+        </DropdownMenuItem>
 
         <DropdownMenuSeparator />
 

@@ -9,6 +9,7 @@ import VideoGrid from "@/components/sections/video-grid";
 import VideoRow from "@/components/sections/video-row";
 import BackToTopButton from "@/components/sections/back-to-top-button";
 import { useI18n } from "@/lib/i18n-context";
+import { useIncognito } from "@/lib/incognito-context";
 import { useSidebarLayout } from "@/hooks/use-sidebar-layout";
 import { useTopPadding } from "@/hooks/use-top-padding";
 
@@ -20,6 +21,7 @@ export default function Home() {
   const [isGridLoading, setIsGridLoading] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const { direction, t, videosPerPage } = useI18n();
+  const { isIncognito } = useIncognito();
   const mainPaddingTop = useTopPadding();
   const { marginClass } = useSidebarLayout(sidebarOpen);
 
@@ -86,9 +88,10 @@ export default function Home() {
     return () => window.removeEventListener("orchids-sidebar-navigate", handler);
   }, [applyCategoryFromKey]);
 
-  // Persistence to save scroll position and state
+  // Persistence to save scroll position and state (disabled in incognito mode)
   useEffect(() => {
     let savedQuery = "", savedCategory = "", savedPage = "", savedScroll = "", sidebarCat = "";
+    if (isIncognito) return; // Don't restore state in incognito mode
     try {
       savedQuery = localStorage.getItem("searchQuery") || "";
       savedCategory = localStorage.getItem("activeCategory") || "";
@@ -128,19 +131,22 @@ export default function Home() {
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [categoryKeyMap]);
+  }, [categoryKeyMap, isIncognito]);
 
   useEffect(() => {
+    if (isIncognito) return;
     try { localStorage.setItem("searchQuery", searchQuery); } catch {}
-  }, [searchQuery]);
+  }, [searchQuery, isIncognito]);
 
   useEffect(() => {
+    if (isIncognito) return;
     try { localStorage.setItem("activeCategory", activeCategory); } catch {}
-  }, [activeCategory]);
+  }, [activeCategory, isIncognito]);
 
   useEffect(() => {
+    if (isIncognito) return;
     try { localStorage.setItem("currentPage", currentPage.toString()); } catch {}
-  }, [currentPage]);
+  }, [currentPage, isIncognito]);
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);

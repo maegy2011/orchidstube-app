@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import type { VideoDetails } from '@/lib/types';
 import type { UseVideoDataOptions, UseVideoDataReturn } from '../types';
+import { useIncognito } from '@/lib/incognito-context';
 
 export function useVideoData({
   videoId,
@@ -23,6 +24,7 @@ export function useVideoData({
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
   const isMounted = useRef(false);
+  const { isIncognito } = useIncognito();
 
   // Video fetch effect — with AbortController
   useEffect(() => {
@@ -118,9 +120,9 @@ export function useVideoData({
     return () => controller.abort();
   }, [userId, video]);
 
-  // History recording effect — with AbortController
+  // History recording effect — disabled in incognito mode
   useEffect(() => {
-    if (!userId || !video) return;
+    if (!userId || !video || isIncognito) return;
 
     let cancelled = false;
     const timer = setTimeout(async () => {
@@ -144,10 +146,10 @@ export function useVideoData({
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [userId, video, videoId]);
+  }, [userId, video, videoId, isIncognito]);
 
   const toggleSubscription = async () => {
-    if (!userId || !video || subscribing) return;
+    if (!userId || !video || subscribing || isIncognito) return;
     setSubscribing(true);
     try {
       if (isSubscribed) {
