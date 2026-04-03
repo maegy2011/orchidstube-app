@@ -28,7 +28,7 @@ export default function ShortsEmpty({
 }: ShortsEmptyProps) {
   if (loading) {
     return (
-      <div className="bg-black flex flex-col items-center justify-center gap-4" style={{ height: `calc(100vh - ${offset})`, marginTop: offset }}>
+      <div className="bg-black flex flex-col items-center justify-center gap-4" style={{ height: `calc(100vh - ${offset})`, marginTop: offset }} dir={direction}>
         <Masthead onMenuClick={onMenuClick} />
         <React.Suspense fallback={null}>
           <div className="w-10 h-10 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
@@ -63,7 +63,7 @@ export default function ShortsEmpty({
 
   if (error) {
     return (
-      <div className="h-screen bg-black flex flex-col items-center justify-center p-6 text-center">
+      <div className="h-screen bg-black flex flex-col items-center justify-center p-6 text-center" dir={direction}>
         <Masthead onMenuClick={onMenuClick} />
         <div className="max-w-xs space-y-5">
           <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto">
