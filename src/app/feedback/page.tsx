@@ -29,7 +29,7 @@ export default function FeedbackPage() {
     timerRef.current = setTimeout(() => {
       setIsSending(false);
       setSubmitted(true);
-      toast.success("شكراً لمشاركتنا ملاحظاتك", {
+      toast.success(t('feedbackToast'), {
         icon: <CheckCircle2 className="w-5 h-5 text-green-500" />
       });
     }, 2000);
@@ -82,19 +82,19 @@ export default function FeedbackPage() {
                       <MessageSquarePlus className="w-8 h-8" />
                     </div>
                     <div>
-                      <h1 className="text-2xl font-bold">إرسال ملاحظات</h1>
-                      <p className="opacity-80 text-sm text-white">ساعدنا في تحسين تجربة يوتيوب</p>
+                      <h1 className="text-2xl font-bold">{t('feedbackTitle')}</h1>
+                      <p className="opacity-80 text-sm text-white">{t('feedbackSubtitle')}</p>
                     </div>
                   </div>
 
                   <form onSubmit={handleSubmit} className="p-8">
                     <div className="mb-6">
-                      <label className="block text-sm font-bold text-muted-foreground mb-2">ما الذي يدور في ذهنك؟</label>
+                      <label className="block text-sm font-bold text-muted-foreground mb-2">{t('feedbackLabel')}</label>
                       <textarea 
                         required
                         value={feedback}
                         onChange={(e) => setFeedback(e.target.value)}
-                        placeholder="اكتب ملاحظاتك هنا بالتفصيل..."
+                        placeholder={t('feedbackPlaceholder')}
                         className="w-full h-40 p-4 bg-muted rounded-2xl border-2 border-transparent focus:border-red-500 focus:bg-background outline-none transition-all resize-none text-lg text-foreground"
                       />
                     </div>
@@ -102,9 +102,9 @@ export default function FeedbackPage() {
                     <div className="flex items-center gap-4 mb-8">
                       <button type="button" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors bg-muted px-4 py-2 rounded-xl text-sm font-semibold">
                         <ImageIcon className="w-5 h-5" />
-                        إرفاق لقطة شاشة
+                        {t('feedbackAttach')}
                       </button>
-                      <div className="flex-1 text-xs text-muted-foreground">سيتم إرسال معلومات النظام والمتصفح تلقائياً لمساعدتنا في تشخيص المشكلة.</div>
+                      <div className="flex-1 text-xs text-muted-foreground">{t('feedbackNote')}</div>
                     </div>
 
                     <button 
@@ -119,8 +119,8 @@ export default function FeedbackPage() {
                         <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       ) : (
                         <>
-                          <Send className={`w-5 h-5 ${direction === 'rtl' ? 'rotate-180' : ''}`} />
-                          إرسال الآن
+                          <Send className="w-5 h-5 rtl:rotate-180" />
+                          {t('feedbackSubmitBtn')}
                         </>
                       )}
                     </button>
@@ -136,8 +136,8 @@ export default function FeedbackPage() {
                   <div className="inline-flex p-6 bg-green-500/10 rounded-full mb-6">
                     <CheckCircle2 className="w-16 h-16 text-green-500" />
                   </div>
-                  <h2 className="text-3xl font-bold mb-4 text-foreground">شكراً لك!</h2>
-                  <p className="text-muted-foreground mb-8 max-w-sm mx-auto">لقد تم استلام ملاحظاتك بنجاح. تساعدنا مساهمتك في جعل يوتيوب أفضل للجميع.</p>
+                  <h2 className="text-3xl font-bold mb-4 text-foreground">{t('feedbackSuccessHeading')}</h2>
+                  <p className="text-muted-foreground mb-8 max-w-sm mx-auto">{t('feedbackSuccessDesc')}</p>
                   <button 
                     onClick={() => {
                       setSubmitted(false);
@@ -145,7 +145,7 @@ export default function FeedbackPage() {
                     }}
                     className="bg-muted text-foreground px-8 py-3 rounded-xl font-bold hover:bg-muted/80 transition-colors"
                   >
-                    إرسال ملاحظة أخرى
+                    {t('feedbackAnotherBtn')}
                   </button>
                 </motion.div>
               )}

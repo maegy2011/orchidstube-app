@@ -1023,3 +1023,24 @@ Stage Summary:
 - 5 files modified: page.tsx, history/page.tsx, favorites/page.tsx, subscriptions/page.tsx, auth-layout.tsx
 - Every page in the app now has dir={direction} on its root div, matching the Watch page pattern
 - Lint passes cleanly, dev server compiles successfully
+
+---
+Task ID: 4
+Agent: Main
+Task: Translate help/support/feedback/shorts pages and fix direction issues
+
+Work Log:
+- Audited help, support, feedback, and shorts pages for hardcoded Arabic text and direction issues
+- Added ~37 translation keys to both en.ts and ar.ts
+- Replaced all hardcoded Arabic strings with t() calls in all 4 pages
+- Fixed direction: Help page ChevronLeft → ChevronRight + rtl:rotate-180
+- Fixed direction: Support page Send icon direction === 'rtl' conditional → rtl:rotate-180
+- Fixed direction: Feedback page Send icon direction === 'rtl' conditional → rtl:rotate-180
+- Fixed shorts page: hardcoded bilingual query → t('shortsQuery')
+- Verified: zero hardcoded Arabic remaining, all routes return 200, lint clean
+
+Stage Summary:
+- 6 files modified: en.ts, ar.ts, help/page.tsx, support/page.tsx, feedback/page.tsx, shorts/page.tsx
+- 37 new translation keys added for help/support/feedback/shorts pages
+- All hardcoded text replaced with i18n t() calls
+- Direction-aware icons now use rtl: class variant

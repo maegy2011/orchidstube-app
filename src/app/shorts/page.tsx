@@ -44,7 +44,7 @@ export default function ShortsPage() {
     setLoading(true);
     setError(null);
     try {
-      const query = language === 'ar' ? 'مقاطع قصيرة إسلامية' : 'educational shorts islamic';
+      const query = t('shortsQuery');
       const response = await fetch(`/api/videos/search?q=${encodeURIComponent(query)}`);
       if (response.ok) {
         const data = await response.json();

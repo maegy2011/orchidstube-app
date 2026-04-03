@@ -45,7 +45,7 @@ export default function SupportPage() {
     setMessages([
       {
         id: '1',
-        text: "مرحباً! كيف يمكننا مساعدتك اليوم؟ نحن هنا للرد على استفساراتك.",
+        text: t('supportWelcome'),
         sender: 'agent',
         timestamp: new Date()
       }
@@ -73,10 +73,10 @@ export default function SupportPage() {
 
     timerRef.current = setTimeout(() => {
       const responses = [
-        "شكراً لتواصلك معنا. جاري تحويلك لأحد ممثلي خدمة العملاء.",
-        "فهمت المشكلة. هل يمكنك تزويدي بمزيد من التفاصيل؟",
-        "نحن نعمل على حل هذا الأمر حالياً. شكراً لصبرك.",
-        "بالتأكيد، يمكنني مساعدتك في ذلك. ما هو رقم الحساب الخاص بك؟"
+        t('supportResponse1'),
+        t('supportResponse2'),
+        t('supportResponse3'),
+        t('supportResponse4')
       ];
       const randomResponse = responses[Math.floor(Math.random() * responses.length)];
       
@@ -111,7 +111,7 @@ export default function SupportPage() {
                   <h1 className="text-lg font-bold">{t('support')}</h1>
                   <div className="flex items-center gap-1.5">
                     <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                    <span className="text-xs opacity-80 font-medium text-white">متصل الآن</span>
+                    <span className="text-xs opacity-80 font-medium text-white">{t('supportOnlineNow')}</span>
                   </div>
                 </div>
               </div>
@@ -206,7 +206,7 @@ export default function SupportPage() {
                 type="text"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="اكتب رسالتك هنا..."
+                placeholder={t('supportInputPlaceholder')}
                 className="flex-1 bg-transparent border-none focus:ring-0 outline-none p-2 text-foreground placeholder:text-muted-foreground"
               />
               <button 
@@ -217,7 +217,7 @@ export default function SupportPage() {
                   ${!message.trim() ? 'bg-muted-foreground/30 text-muted-foreground cursor-not-allowed' : 'bg-red-600 text-white shadow-lg shadow-red-600/30 hover:bg-red-700 active:scale-95'}
                 `}
               >
-                <Send className={`w-5 h-5 ${direction === 'rtl' ? 'rotate-180' : ''}`} />
+                <Send className="w-5 h-5 rtl:rotate-180" />
               </button>
             </div>
           </form>
