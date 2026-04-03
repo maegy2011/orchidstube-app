@@ -1,42 +1,20 @@
 import { SVGProps, forwardRef } from "react";
 
 /**
- * Incognito Mask Icon — a stylized masquerade/domino mask
- * representing privacy, anonymity, and incognito mode.
+ * Incognito Mask Icon — domino mask representing privacy and anonymity.
+ * Based on the official incognito mask SVG from SVGRepo.
  */
 export const IncognitoMaskIcon = forwardRef<SVGSVGElement, SVGProps<SVGSVGElement>>(
   ({ className, ...props }, ref) => (
     <svg
       ref={ref}
       viewBox="0 0 512 512"
-      fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
+      fill="currentColor"
       {...props}
     >
-      {/* Mask body — smooth domino shape */}
-      <path
-        d="M256 48C150 48 60 100 32 160C32 160 30 168 32 180L56 320C72 380 160 440 256 440C352 440 440 380 456 320L480 180C482 168 480 160 480 160C452 100 362 48 256 48Z"
-        fill="currentColor"
-      />
-      {/* Left eye cutout */}
-      <path
-        d="M140 200C120 200 104 218 104 244C104 270 120 288 140 288C160 288 180 270 188 244C196 218 176 200 140 200Z"
-        fill="var(--mask-bg, #0a0a0a)"
-      />
-      {/* Right eye cutout */}
-      <path
-        d="M372 200C352 200 336 200 324 244C316 270 336 288 356 288C376 288 392 270 408 244C412 218 392 200 372 200Z"
-        fill="var(--mask-bg, #0a0a0a)"
-      />
-      {/* Bridge between eyes — subtle curve */}
-      <path
-        d="M200 232C220 220 292 220 312 232"
-        stroke="var(--mask-bg, #0a0a0a)"
-        strokeWidth="8"
-        strokeLinecap="round"
-        fill="none"
-      />
+      <path d="M508.692,167.211c-14.625,0.984-64.391,5.859-128.781,5.859c-90.734,0-96.594,32.188-123.922,32.188 c-31.203,0-29.25-32.188-123.906-32.188c-64.391,0-114.156-4.875-128.781-5.859c-10.531-0.703,3.906,103.406,46.828,142.438 c32.5,29.547,111.234,54.656,172.703,13.656c23.422-18.516,33.156-18.516,33.156-18.516s9.781,0,33.188,18.516 c61.453,41,140.203,15.891,172.688-13.656C504.786,270.617,519.239,166.508,508.692,167.211z M202.442,255.305 c-45.656,50.922-120.297,15.797-121.172-35.141C165.552,207.008,205.755,251.602,202.442,255.305z M309.552,255.305 c-3.313-3.703,36.875-48.297,121.172-35.141C429.849,271.102,355.224,306.227,309.552,255.305z" />
     </svg>
   )
 );

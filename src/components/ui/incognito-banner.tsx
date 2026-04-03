@@ -29,7 +29,7 @@ export function IncognitoBanner() {
           <div className="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-amber-500/10 border-b border-amber-500/20 backdrop-blur-sm">
             <div className="relative flex items-center gap-2">
               <div className="absolute inset-0 bg-amber-500/10 rounded-full animate-ping opacity-30 scale-150" />
-              <IncognitoMaskIcon className="w-4 h-4 text-amber-600 dark:text-amber-400 relative" style={{ '--mask-bg': '#fbbf24' } as React.CSSProperties} />
+              <IncognitoMaskIcon className="w-4 h-4 text-amber-600 dark:text-amber-400 relative" />
             </div>
             <p className="text-xs font-semibold text-amber-700 dark:text-amber-300 tracking-wide">
               {t("incognitoBanner")}

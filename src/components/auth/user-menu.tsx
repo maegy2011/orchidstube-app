@@ -70,7 +70,7 @@ export function UserMenu() {
               />
               {isIncognito && (
                 <div className="absolute -top-1.5 -end-1.5 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center ring-2 ring-background shadow-md">
-                  <IncognitoMaskIcon className="w-3.5 h-3.5 text-white" style={{ '--mask-bg': '#d97706' } as React.CSSProperties} />
+                  <IncognitoMaskIcon className="w-3.5 h-3.5 text-white" />
                 </div>
               )}
             </div>
@@ -84,7 +84,7 @@ export function UserMenu() {
               {userInitial}
               {isIncognito && (
                 <div className="absolute -top-1.5 -end-1.5 w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center ring-2 ring-background shadow-md">
-                  <IncognitoMaskIcon className="w-3.5 h-3.5 text-amber-900" style={{ '--mask-bg': '#b45309' } as React.CSSProperties} />
+                  <IncognitoMaskIcon className="w-3.5 h-3.5 text-amber-900" />
                 </div>
               )}
             </div>
@@ -138,7 +138,7 @@ export function UserMenu() {
           onSelect={toggleIncognito}
         >
           {isIncognito ? (
-            <IncognitoMaskIcon className="w-4 h-4 text-amber-500" style={{ '--mask-bg': '#fbbf24' } as React.CSSProperties} />
+            <IncognitoMaskIcon className="w-4 h-4 text-amber-500" />
           ) : (
             <Eye size={16} className="text-muted-foreground" />
           )}
