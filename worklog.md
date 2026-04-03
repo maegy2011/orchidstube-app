@@ -1394,3 +1394,36 @@ Stage Summary:
 - Memory cache prevents redundant search API calls for the same channel
 - ESLint: 0 errors
 - API test: both videos return real avatar URLs
+
+---
+Task ID: playlist-integration
+Agent: Main Agent
+Task: Add ability to save current video to a playlist from the watch page
+
+Work Log:
+- Discovered that the entire playlist system was already fully built but not integrated into the watch page:
+  - Hook: `src/hooks/usePlaylists.ts` — full CRUD (create, update, delete, add/remove items, check membership)
+  - API routes: 3 endpoints (`/api/playlists`, `/api/playlists/items`, `/api/playlists/[id]`)
+  - Modal: `src/components/playlists/AddToPlaylistModal.tsx` — dialog to toggle video in/out of playlists
+  - Create dialog: `src/components/playlists/CreatePlaylistDialog.tsx` — create new playlist form
+  - Pages: `/playlists/page.tsx` and `/playlists/[id]/page.tsx`
+  - Drizzle schema: `playlists` and `playlistItems` tables already defined
+  - i18n: all translation keys already defined in all 10 languages
+- Added `ListPlus` icon import and `onShowPlaylist` prop to `VideoInfoSection.tsx`
+- Added "Save to Playlist" button next to Watch Later in the action buttons row
+- Added `showPlaylistModal` state and `AddToPlaylistModal` import in `WatchClient.tsx`
+- Wired modal to open with current video data (videoId, title, thumbnail, channelName, duration)
+- Enhanced `AddToPlaylistModal.tsx` with inline "Create new playlist" capability:
+  - Added collapsible create form at bottom of modal
+  - Shows "New Playlist" button with `+` icon
+  - Expands to reveal name input + create button
+  - Auto-adds the video to the newly created playlist
+  - Animated expand/collapse with AnimatePresence
+
+Stage Summary:
+- Files modified: `VideoInfoSection.tsx`, `WatchClient.tsx`, `AddToPlaylistModal.tsx`
+- New button: "Save to Playlist" (ListPlus icon) in watch page action buttons row
+- Modal: Shows all playlists with checkmarks for those containing the video
+- Create: Inline form to create new playlist and auto-add video
+- ESLint: 0 errors
+- Dev server: compiles successfully

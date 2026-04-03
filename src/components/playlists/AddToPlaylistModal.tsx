@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -7,7 +8,9 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { ListPlus, Check, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ListPlus, Check, Loader2, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import { useI18n } from "@/lib/i18n-context";
 import { usePlaylists } from "@/hooks/usePlaylists";
 import { motion, AnimatePresence } from "framer-motion";
@@ -31,8 +34,13 @@ export default function AddToPlaylistModal({
   video,
 }: AddToPlaylistModalProps) {
   const { t } = useI18n();
-  const { playlists, isLoaded, isInPlaylist, addToPlaylist, removeFromPlaylist } =
+  const { playlists, isLoaded, isInPlaylist, addToPlaylist, removeFromPlaylist, createPlaylist } =
     usePlaylists();
+
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newPlaylistName, setNewPlaylistName] = useState("");
+  const [newPlaylistDesc, setNewPlaylistDesc] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
 
   const handleTogglePlaylist = (playlistId: string) => {
     const alreadyIn = isInPlaylist(playlistId, video.videoId);
@@ -43,6 +51,33 @@ export default function AddToPlaylistModal({
     } else {
       addToPlaylist(playlistId, video);
       toast.success(t("addedToPlaylist"));
+    }
+  };
+
+  const handleCreatePlaylist = () => {
+    if (!newPlaylistName.trim()) return;
+
+    setIsCreating(true);
+    try {
+      const created = createPlaylist(newPlaylistName.trim(), newPlaylistDesc.trim() || undefined);
+      if (created) {
+        // Auto-add the video to the newly created playlist
+        addToPlaylist(created.id, video);
+        toast.success(t("playlistCreated"));
+        setNewPlaylistName("");
+        setNewPlaylistDesc("");
+        setShowCreateForm(false);
+      }
+    } catch {
+      toast.error("Failed to create playlist");
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleCreateKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && newPlaylistName.trim()) {
+      handleCreatePlaylist();
     }
   };
 
@@ -79,7 +114,7 @@ export default function AddToPlaylistModal({
             <div className="flex items-center justify-center py-8">
               <Loader2 className="size-6 animate-spin text-muted-foreground" />
             </div>
-          ) : playlists.length === 0 ? (
+          ) : playlists.length === 0 && !showCreateForm ? (
             <div className="flex flex-col items-center justify-center py-8 text-center px-4">
               <div className="p-3 rounded-full bg-muted mb-3">
                 <ListPlus className="size-6 text-muted-foreground" />
@@ -149,6 +184,62 @@ export default function AddToPlaylistModal({
               })}
             </AnimatePresence>
           )}
+        </div>
+
+        {/* Create new playlist section */}
+        <div className="border-t border-border/50 pt-3 mt-1">
+          <AnimatePresence mode="wait">
+            {!showCreateForm ? (
+              <motion.button
+                key="create-btn"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, height: 0 }}
+                onClick={() => setShowCreateForm(true)}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-muted/70 transition-colors text-sm font-medium text-foreground"
+              >
+                <Plus size={16} className="text-primary" />
+                {t("newPlaylist")}
+                <ChevronDown size={14} className="ms-auto text-muted-foreground" />
+              </motion.button>
+            ) : (
+              <motion.div
+                key="create-form"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="space-y-2.5 overflow-hidden"
+              >
+                <button
+                  onClick={() => { setShowCreateForm(false); setNewPlaylistName(""); setNewPlaylistDesc(""); }}
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ChevronUp size={12} />
+                  {t("cancel")}
+                </button>
+                <Input
+                  value={newPlaylistName}
+                  onChange={(e) => setNewPlaylistName(e.target.value)}
+                  placeholder={t("playlistNamePlaceholder")}
+                  className="h-9 text-sm"
+                  onKeyDown={handleCreateKeyDown}
+                  autoFocus
+                />
+                <Button
+                  onClick={handleCreatePlaylist}
+                  disabled={!newPlaylistName.trim() || isCreating}
+                  className="w-full h-9 text-sm bg-red-600 hover:bg-red-700 text-white gap-2"
+                >
+                  {isCreating ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Plus size={14} />
+                  )}
+                  {t("createPlaylist")}
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </DialogContent>
     </Dialog>

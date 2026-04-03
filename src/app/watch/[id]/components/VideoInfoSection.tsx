@@ -19,6 +19,7 @@ import {
   Loader2,
   Maximize2,
   Minimize2,
+  ListPlus,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -60,6 +61,7 @@ interface VideoInfoSectionProps {
   channelUrl: string | null;
   onSeekTo: (seconds: number) => void;
   isPlayerInteractive: () => boolean;
+  onShowPlaylist: () => void;
 }
 
 export default function VideoInfoSection({
@@ -94,6 +96,7 @@ export default function VideoInfoSection({
   channelUrl,
   onSeekTo,
   isPlayerInteractive,
+  onShowPlaylist,
 }: VideoInfoSectionProps) {
   const [showMoreDropdown, setShowMoreDropdown] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
@@ -249,6 +252,14 @@ export default function VideoInfoSection({
           >
             <BookmarkPlus size={16} />
             <span className="hidden sm:inline">{isInWatchLater(videoId) ? t('in_list') : t('watchLater')}</span>
+          </button>
+          {/* Save to Playlist */}
+          <button
+            onClick={onShowPlaylist}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-secondary rounded-full hover:bg-secondary/80 transition-all border border-border active:scale-95 text-sm font-semibold"
+          >
+            <ListPlus size={16} />
+            <span className="hidden sm:inline">{t('addToPlaylist')}</span>
           </button>
           {/* Theater */}
           <button

@@ -26,6 +26,7 @@ import SidebarGuide from '@/components/sections/sidebar-guide';
 import ShareModal from '@/components/ui/share-modal';
 import ConfirmModal from '@/components/ui/confirm-modal';
 import { EyeProtection } from '@/components/ui/eye-protection';
+import AddToPlaylistModal from '@/components/playlists/AddToPlaylistModal';
 
 import type { WatchClientProps } from './types';
 import { formatDuration, extractHashtags, extractChapters } from './utils/format.tsx';
@@ -90,6 +91,7 @@ export default function WatchClient({
   // ─── Local UI state ───
   const [showDescription, setShowDescription] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isWatchLocked, setIsWatchLocked] = useState(false);
   const [activeTab, setActiveTab] = useState<ContentTab>('overview');
@@ -346,6 +348,7 @@ export default function WatchClient({
               hasValidViews={hasValidViews} hasValidLikes={hasValidLikes}
               hasValidDate={hasValidDate} hasValidSubscribers={hasValidSubscribers}
               channelUrl={channelUrl} onSeekTo={handleSeekTo} isPlayerInteractive={player.isPlayerInteractive}
+              onShowPlaylist={() => setShowPlaylistModal(true)}
             />
 
             {/* ── Tab Bar ── */}
@@ -410,6 +413,19 @@ export default function WatchClient({
 
       {/* ─── Modals ─── */}
       {showShareModal && video && <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} videoId={videoId} videoTitle={video.title} thumbnail={video.thumbnail} />}
+      {showPlaylistModal && video && (
+        <AddToPlaylistModal
+          open={showPlaylistModal}
+          onOpenChange={setShowPlaylistModal}
+          video={{
+            videoId: video.id,
+            title: video.title,
+            thumbnail: video.thumbnail,
+            channelName: video.channelName,
+            duration: String(video.duration),
+          }}
+        />
+      )}
       <ConfirmModal isOpen={notes.deleteModalOpen} onClose={() => { notes.setDeleteModalOpen(false); notes.setItemToDelete(null); }} onConfirm={notes.confirmDelete} title={t('delete_note_title')} description={t('delete_note_desc')} confirmText={t('delete_confirm_btn')} variant="danger" />
       <EyeProtection showModalInitially={true} />
     </div>
