@@ -10,6 +10,7 @@ import { SessionProvider } from "@/components/auth/session-provider";
 import { I18nProvider } from "@/lib/i18n-context";
 import { IncognitoProvider } from "@/lib/incognito-context";
 import { WellBeingProvider } from "@/lib/well-being-context";
+import { PlaylistQueueProvider } from "@/lib/playlist-queue-context";
 import { ClientLayout } from "@/components/ClientLayout";
 import { WellBeingGuard } from "@/components/ui/well-being-guard";
 
@@ -59,31 +60,33 @@ export default async function RootLayout({
         >
           <I18nProvider>
             <IncognitoProvider>
-            <WellBeingProvider>
-              <WellBeingGuard>
-                <ClientLayout />
-                <NextTopLoader color="#FF0000" showSpinner={true} height={3} shadow="0 0 10px #FF0000,0 0 5px #FF0000" />
-                <Script
-                  id="orchids-browser-logs"
-                  src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/scripts/orchids-browser-logs.js"
-                  strategy="afterInteractive"
-                  data-orchids-project-id="24dba629-ac6d-4688-8eef-3717d0605584"
-                />
-                <ErrorReporter />
-                <Toaster position="bottom-left" expand={false} richColors />
-                <Script
-                  src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/scripts/route-messenger.js"
-                  strategy="afterInteractive"
-                  data-target-origin="https://orchidstube.com"
-                  data-message-type="ROUTE_CHANGE"
-                  data-include-search-params="true"
-                  data-only-in-iframe="true"
-                  data-debug={process.env.NODE_ENV === 'development' ? 'true' : 'false'}
-                  data-custom-data='{"appName": "Orchids", "version": "1.0.0"}'
-                />
-                {children}
-              </WellBeingGuard>
-            </WellBeingProvider>
+              <WellBeingProvider>
+                <PlaylistQueueProvider>
+                  <WellBeingGuard>
+                    <ClientLayout />
+                    <NextTopLoader color="#FF0000" showSpinner={true} height={3} shadow="0 0 10px #FF0000,0 0 5px #FF0000" />
+                    <Script
+                      id="orchids-browser-logs"
+                      src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/scripts/orchids-browser-logs.js"
+                      strategy="afterInteractive"
+                      data-orchids-project-id="24dba629-ac6d-4688-8eef-3717d0605584"
+                    />
+                    <ErrorReporter />
+                    <Toaster position="bottom-left" expand={false} richColors />
+                    <Script
+                      src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/scripts/route-messenger.js"
+                      strategy="afterInteractive"
+                      data-target-origin="https://orchidstube.com"
+                      data-message-type="ROUTE_CHANGE"
+                      data-include-search-params="true"
+                      data-only-in-iframe="true"
+                      data-debug={process.env.NODE_ENV === 'development' ? 'true' : 'false'}
+                      data-custom-data='{"appName": "Orchids", "version": "1.0.0"}'
+                    />
+                    {children}
+                  </WellBeingGuard>
+                </PlaylistQueueProvider>
+              </WellBeingProvider>
             </IncognitoProvider>
           </I18nProvider>
         </ThemeProvider>

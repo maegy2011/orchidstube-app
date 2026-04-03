@@ -24,6 +24,8 @@ import ShareModal from '@/components/ui/share-modal';
 import ConfirmModal from '@/components/ui/confirm-modal';
 import { EyeProtection } from '@/components/ui/eye-protection';
 import AddToPlaylistModal from '@/components/playlists/AddToPlaylistModal';
+import PlaylistQueue from '@/components/playlists/PlaylistQueue';
+import { usePlaylistQueue } from '@/lib/playlist-queue-context';
 
 import type { WatchClientProps } from './types';
 import { formatDuration, extractChapters } from './utils/format.tsx';
@@ -59,6 +61,7 @@ export default function WatchClient({
   const mainPaddingTop = useTopPadding();
   const { userId } = useUser();
   const { toggleWatchLater, isInWatchLater } = useWatchLater();
+  const playlistQueue = usePlaylistQueue();
   const { getNotesByVideoId, isLoaded } = useNotes();
   useWellBeing();
 
@@ -117,6 +120,16 @@ export default function WatchClient({
     isWatchLocked,
     isPlayerInteractive: player.isPlayerInteractive,
   });
+
+  // ─── Auto-advance playlist ───
+  useEffect(() => {
+    if (player.playerState === 0 && playlistQueue.autoplay && playlistQueue.items.length > 0 && playlistQueue.currentVideoId === videoId) {
+      const next = playlistQueue.nextVideo();
+      if (next) {
+        router.push(`/watch/${next.videoId}`);
+      }
+    }
+  }, [player.playerState]);
 
   // Sync state → shared refs
   useEffect(() => { activeNoteRangeRef.current = notes.activeNoteRange; }, [notes.activeNoteRange]);
@@ -309,7 +322,10 @@ export default function WatchClient({
           </div>
 
           {/* ═══════ Right Sidebar ═══════ */}
-          <RelatedVideos video={video} t={t} direction={direction} language={language} theaterMode={theaterMode} chapters={chapters} onSeekTo={handleSeekTo} isPlayerInteractive={player.isPlayerInteractive} onScrollToPlayer={scrollToPlayer} />
+          <div className="w-full lg:w-[406px] shrink-0 space-y-4">
+            <PlaylistQueue />
+            <RelatedVideos video={video} t={t} direction={direction} language={language} theaterMode={theaterMode} chapters={chapters} onSeekTo={handleSeekTo} isPlayerInteractive={player.isPlayerInteractive} onScrollToPlayer={scrollToPlayer} />
+          </div>
         </div>
       </main>
 

@@ -36,12 +36,7 @@ export async function GET() {
           count: drizzleCount(),
         })
         .from(playlistItems)
-        .where(
-          and(
-            eq(playlistItems.userId, userId),
-            // playlistIds filter applied below
-          ),
-        )
+        .where(eq(playlistItems.userId, userId))
         .groupBy(playlistItems.playlistId);
 
       videoCounts = Object.fromEntries(

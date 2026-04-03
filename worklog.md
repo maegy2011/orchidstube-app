@@ -1501,3 +1501,152 @@ Stage Summary:
 - 100 new translation key-value pairs across 10 languages
 - ESLint: 0 errors
 - Dev server: compiles successfully, playlist API returning 200
+---
+Task ID: 3
+Agent: Backend Developer
+Task: Add reorder API endpoint + fix count query bug
+
+Work Log:
+- Fixed misleading comment in /api/playlists/route.ts count query
+- Created /api/playlists/reorder/route.ts with PUT endpoint
+- Added reorderPlaylistItems to usePlaylists hook
+
+Stage Summary:
+- Reorder API endpoint ready at PUT /api/playlists/reorder
+- usePlaylists hook now exports reorderPlaylistItems function
+
+---
+Task ID: N/A
+Agent: sub-agent (i18n)
+Task: Add missing playlist-related i18n keys to all 10 language sections
+
+Work Log:
+- Identified 32 new playlist-related i18n keys needed across all 10 languages
+- Located `playlistBackTitle` line in each language section (anchor for insertion)
+- Inserted new keys after `playlistBackTitle` in all 10 language sections:
+  - English (en), Arabic (ar), French (fr), Spanish (es), Chinese (zh),
+  - Japanese (ja), Italian (it), German (de), Portuguese (pt), Turkish (tr)
+- Fixed minor spacing issue in Turkish `nowPlaying` key
+- Verified: all 32 keys appear exactly 10 times (once per language)
+
+New keys added: playlistNotFound, videoRemoved, removeVideo, private,
+deletePlaylistConfirm, renamePlaylist, video_one, video_other,
+link_copied, playAll, shuffle, playlistTotalDuration, moveUp, moveDown,
+removeFromPlaylistConfirm, savePlaylist, editPlaylistTitle,
+playlistNameRequired, addedAt, autoplay, loopPlaylist, nowPlaying,
+upNext, nextVideo, prevVideo, playingFrom, removeFromPlaylistShort,
+cancel, playlistActions, selectAll, deleteSelected, noVideosSelected
+
+Stage Summary:
+- File modified: src/lib/translations.ts (320 new key-value pairs added across 10 languages)
+- All 10 language sections updated with consistent 32 new keys each
+- Proper indentation maintained per language section (2-space for en, 12-space for ar, 4-space for others)
+
+---
+Task ID: 4
+Agent: sub-agent
+Task: Build playlist queue context for managing playlist playback queue
+
+Work Log:
+- Created `/home/z/my-project/src/lib/playlist-queue-context.tsx` — React context for playlist playback queue management
+- Implements `PlaylistQueueProvider` with full state management for playlist playback
+- Tracks: playlistId, playlistName, items (PlaylistItem[]), currentIndex, isPlaying, shuffle, loop, autoplay
+- Fisher-Yates shuffle algorithm with current index preserved as first in shuffled order
+- Supports next/prev navigation with shuffle-aware and loop-aware logic
+- Supports toggle controls for shuffle, loop, and autoplay modes
+- Supports `playPlaylist()` to start a playlist from a given index
+- Supports `playFromIndex()` to jump to a specific track
+- Supports `clearQueue()` to reset all state
+- Supports `removeItem()` to remove a video from the queue with index adjustment
+- Exposes `usePlaylistQueue()` hook with safety check (throws if used outside provider)
+- Derived state: `currentVideoId`, `hasNext`, `hasPrev`, `shuffledOrder`
+- Imports `PlaylistItem` type from `@/hooks/usePlaylists`
+
+Stage Summary:
+- File created: `src/lib/playlist-queue-context.tsx`
+- Provides `PlaylistQueueProvider` and `usePlaylistQueue` hook for use by playlist detail page and watch page
+- Full shuffle/loop/autoplay support with Fisher-Yates shuffle algorithm
+- Context designed for cross-page state sharing (playlist detail → watch page queue)
+
+---
+Task ID: 5-8
+Agent: Main Agent
+Task: Fix & Enhance playlists — powerful options with full control + play videos on watch page
+
+Work Log:
+- Audited entire playlist system: hook, 3 API routes, 2 pages, 3 components, schema, translations
+- Identified 10+ missing i18n keys used in code but never defined
+- Found and fixed videoCount query comment bug in /api/playlists/route.ts
+- Found PlaylistCard using t("videoCount") which doesn't support interpolation
+- Found main playlists page showing "X Videos" instead of "X Playlists"
+
+Changes Made:
+1. **32 new i18n keys × 10 languages** (320 entries) added to translations.ts
+   - playlistNotFound, videoRemoved, removeVideo, private, deletePlaylistConfirm, renamePlaylist
+   - video_one, video_other, link_copied, playAll, shuffle, playlistTotalDuration
+   - moveUp, moveDown, removeFromPlaylistConfirm, savePlaylist, editPlaylistTitle
+   - playlistNameRequired, addedAt, autoplay, loopPlaylist, nowPlaying, upNext
+   - nextVideo, prevVideo, playingFrom, removeFromPlaylistShort, cancel
+   - playlistActions, selectAll, deleteSelected, noVideosSelected
+
+2. **New API endpoint**: PUT /api/playlists/reorder — reorders playlist items by updating addedAt timestamps
+
+3. **Enhanced usePlaylists hook**: Added reorderPlaylistItems function with optimistic local update + server sync
+
+4. **Rewrote /playlists page** (main playlists listing):
+   - Replaced window.confirm/window.prompt with proper AlertDialog and Dialog components
+   - Fixed "X Videos" → "X Playlists" display in header and footer
+   - Added Rename dialog with auto-focus and keyboard support
+
+5. **Rewrote /playlists/[id] page** (playlist detail) with powerful controls:
+   - **Play All** button → starts playback from first video, navigates to watch page with queue
+   - **Shuffle Play** → starts from random index with queue
+   - **Inline Edit Mode** — edit name/description directly in the header (no more prompt)
+   - **Move Up/Down** buttons on each item for reordering
+   - **Total Duration** calculated and displayed in localized format (10 languages)
+   - **Autoplay toggle** with Switch component
+   - **Delete confirmation** using AlertDialog (not window.confirm)
+   - **Remove video confirmation** using AlertDialog
+   - **Duration badge** on each video thumbnail
+   - **Footer stats bar** showing total videos + total duration
+   - **Grip handle** on each item for future drag-and-drop
+   - **More actions dropdown** with edit + delete options
+
+6. **Created PlaylistQueue context** (src/lib/playlist-queue-context.tsx):
+   - Full playlist queue management (items, currentIndex, shuffle, loop, autoplay)
+   - Fisher-Yates shuffle algorithm preserving current track
+   - nextVideo/prevVideo navigation with shuffle+loop awareness
+   - removeItem with index adjustment
+   - clearQueue to exit playlist mode
+
+7. **Created PlaylistQueue component** (src/components/playlists/PlaylistQueue.tsx):
+   - Compact sidebar widget for watch page
+   - Header showing "Playing from: {playlist name}"
+   - Shuffle and Loop toggle buttons
+   - Prev/Next navigation with index counter
+   - Scrollable video list with Now Playing indicator (animated equalizer bars)
+   - "Up Next" label on next video
+   - Click-to-play any video in queue
+   - Autoplay toggle in footer
+   - Close button to exit queue mode
+
+8. **Integrated queue into watch page**:
+   - Added PlaylistQueueProvider to root layout
+   - PlaylistQueue renders in right sidebar above Related Videos on watch page
+   - Auto-advance: when video ends (playerState === 0) and autoplay is on, automatically navigates to next video
+   - Import usePlaylistQueue hook in WatchClient
+
+9. **Fixed bugs**:
+   - PlaylistCard videoCount: replaced t("videoCount", {count}) with conditional t("video_one") / `${count} ${t("playlistVideos")}`
+   - Main page header/footer: replaced "X Videos" with "X Playlists" 
+   - API count query: removed misleading comment about playlistIds filter
+   - React 19 lint error: moved stateRef.current = state into useEffect
+   - removeItem bug: fixed prev.currentVideoId reference (property doesn't exist on state type)
+
+Stage Summary:
+- Playlist system now has powerful controls: Play All, Shuffle, Edit inline, Reorder, Total Duration
+- Watch page shows playlist queue sidebar when playing from a playlist
+- Auto-advance to next video when current one ends
+- All dialogs use proper shadcn/ui components (no more window.confirm/prompt)
+- All 320 i18n translations added across 10 languages
+- 0 lint errors, 0 compilation errors

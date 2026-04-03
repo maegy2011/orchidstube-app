@@ -391,6 +391,40 @@ export function usePlaylists() {
     } catch { /* ignore */ }
   }, []);
 
+  // ── reorderPlaylistItems ────────────────────────────────────────────────────
+
+  const reorderPlaylistItems = useCallback((playlistId: string, orderedItemIds: string[]) => {
+    // Reorder in local state
+    setItemsMap(prev => {
+      const items = prev[playlistId] || [];
+      const itemMap = new Map(items.map(item => [item.id, item]));
+      const reordered = orderedItemIds
+        .map(id => itemMap.get(id))
+        .filter(Boolean) as PlaylistItem[];
+      
+      const updated = { ...prev, [playlistId]: reordered };
+      
+      if (!isAuthenticated) {
+        const updatedPlaylists = playlistsRef.current.map(p =>
+          p.id === playlistId ? { ...p, videoCount: reordered.length } : p
+        );
+        saveLocalData({ playlists: updatedPlaylists, items: updated });
+      }
+      
+      return updated;
+    });
+
+    if (isAuthenticated && userId) {
+      fetch('/api/playlists/reorder', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playlistId, itemIds: orderedItemIds }),
+      }).catch(() => {
+        toast.error('Failed to reorder items');
+      });
+    }
+  }, [isAuthenticated, userId]);
+
   return {
     playlists,
     itemsMap,
@@ -400,6 +434,7 @@ export function usePlaylists() {
     deletePlaylist,
     addToPlaylist,
     removeFromPlaylist,
+    reorderPlaylistItems,
     isInPlaylist,
     getPlaylistsForVideo,
     refreshPlaylist,

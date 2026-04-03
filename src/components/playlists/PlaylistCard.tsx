@@ -69,7 +69,9 @@ export default function PlaylistCard({
             <Lock className="size-3.5 text-muted-foreground mt-1 shrink-0" />
           </div>
           <p className="text-xs text-muted-foreground">
-            {t("videoCount", { count: playlist.videoCount })}
+            {playlist.videoCount === 1
+              ? t("video_one")
+              : `${playlist.videoCount} ${t("playlistVideos")}`}
           </p>
         </div>
       </Link>
