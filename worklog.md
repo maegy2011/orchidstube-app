@@ -1427,3 +1427,39 @@ Stage Summary:
 - Create: Inline form to create new playlist and auto-add video
 - ESLint: 0 errors
 - Dev server: compiles successfully
+
+---
+Task ID: watch-page-cleanup
+Agent: Main Agent
+Task: Fix videoCount display, remove Comments/Overview/AI Summary from watch page
+
+Work Log:
+- **Fixed videoCount bug**: `t("videoCount", { count: ... })` returned raw `"{count} videos"` because `t()` doesn't support interpolation. Replaced with inline bilingual formatting: `playlist.videoCount === 1 ? '1 video' : '${count} videos'` (with Arabic equivalents). Added `language` destructuring from `useI18n()` in AddToPlaylistModal.
+- **Removed Comments tab entirely**:
+  - Removed `CommentsSection` import from WatchClient.tsx
+  - Removed `commentSort` state, `sortedComments` derived data, `hasComments` derived data
+  - Removed `activeTab === 'comments'` rendering block
+  - Removed comments tab item from `tabItems`
+- **Removed Overview tab entirely**:
+  - Removed `OverviewTabContent` import from WatchClient.tsx
+  - Removed `activeTab === 'overview'` rendering block
+  - Removed overview tab item from `tabItems`
+- **Removed entire tab system**: Since only "Smart Notes" remained, the tab bar, `activeTab` state, `ContentTab` type, `CommentSort` type, `AnimatePresence` tab wrapper were all removed. NotesSection now renders directly below VideoInfoSection.
+- **Removed AI Summary completely**:
+  - Removed `handleAISummarize` function from WatchClient.tsx
+  - Removed `aiSummary`, `isSummarizing` state from WatchClient.tsx
+  - Removed AI Summary button, card, and skeleton from VideoInfoSection.tsx
+  - Removed `Sparkles`, `X`, `Skeleton` icon imports from VideoInfoSection
+  - Removed `handleAISummarize`, `aiSummary`, `setAiSummary`, `isSummarizing`, `descriptionHashtags` props from VideoInfoSectionProps
+  - `descriptionHashtags` now computed locally inside VideoInfoSection using `extractHashtags()`
+- **Updated constants.ts**: Removed `ContentTab` and `CommentSort` type exports
+- **Fixed lint error**: Wrapped `notesCount.current = videoNotes.length` in `useEffect` to satisfy React 19 `react-hooks/refs` rule
+
+Stage Summary:
+- Files modified: WatchClient.tsx, VideoInfoSection.tsx, AddToPlaylistModal.tsx, constants.ts
+- Files now unused (can be deleted later): OverviewTabContent.tsx, CommentsSection.tsx
+- videoCount now displays correctly: "3 videos" / "3 فيديو" instead of "{count} videos"
+- Comments, Overview, AI Summary completely removed from watch page
+- Tab bar removed — NotesSection renders directly
+- ESLint: 0 errors
+- Dev server: compiles successfully

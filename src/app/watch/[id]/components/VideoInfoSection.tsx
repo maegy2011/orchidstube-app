@@ -10,9 +10,6 @@ import {
   ExternalLink,
   ChevronDown,
   ChevronUp,
-  X,
-  BookmarkPlus,
-  Sparkles,
   Film,
   MoreVertical,
   Keyboard,
@@ -20,13 +17,13 @@ import {
   Maximize2,
   Minimize2,
   ListPlus,
+  BookmarkPlus,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { Skeleton } from '@/components/ui/skeleton';
 import { formatDate } from '../utils/time';
-import { formatViewsCount, formatLikesCount, linkifyDescription } from '../utils/format.tsx';
+import { formatViewsCount, formatLikesCount, linkifyDescription, extractHashtags } from '../utils/format.tsx';
 
 interface VideoInfoSectionProps {
   videoId: string;
@@ -47,12 +44,7 @@ interface VideoInfoSectionProps {
   setShowShareModal: (v: boolean) => void;
   showShortcuts: boolean;
   setShowShortcuts: (v: boolean) => void;
-  handleAISummarize: () => void;
-  aiSummary: string | null;
-  setAiSummary: (v: string | null) => void;
-  isSummarizing: boolean;
   chapters: { time: string; title: string; seconds: number }[];
-  descriptionHashtags: string[];
   videoContainerRef: React.RefObject<HTMLDivElement | null>;
   hasValidViews: boolean;
   hasValidLikes: boolean;
@@ -82,12 +74,7 @@ export default function VideoInfoSection({
   setShowShareModal,
   showShortcuts,
   setShowShortcuts,
-  handleAISummarize,
-  aiSummary,
-  setAiSummary,
-  isSummarizing,
   chapters,
-  descriptionHashtags,
   videoContainerRef,
   hasValidViews,
   hasValidLikes,
@@ -124,6 +111,9 @@ export default function VideoInfoSection({
     }
     scrollToPlayer();
   };
+
+  // Compute hashtags locally from description
+  const descriptionHashtags = video?.description ? extractHashtags(video.description) : [];
 
   return (
     <div className="px-4 lg:px-0 space-y-4">
@@ -335,83 +325,17 @@ export default function VideoInfoSection({
             </div>
           )}
 
-          {/* Actions row */}
-          <div className="flex items-center justify-between mt-3">
-            <div className="flex items-center gap-2">
-              {video.description.length > 120 && (
-                <button
-                  onClick={() => setShowDescription(!showDescription)}
-                  className="text-sm font-bold text-primary flex items-center gap-1 hover:underline"
-                >
-                  {showDescription ? <>{t('hide_description')} <ChevronUp size={14} /></> : <>{t('show_more')} <ChevronDown size={14} /></>}
-                </button>
-              )}
-            </div>
-            {/* AI Summary button */}
-            <button
-              onClick={handleAISummarize}
-              disabled={isSummarizing || !!aiSummary}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border active:scale-95",
-                aiSummary
-                  ? "bg-primary/10 text-primary border-primary/20"
-                  : "bg-secondary text-secondary-foreground border-border hover:bg-secondary/80"
-              )}
-            >
-              {isSummarizing ? (
-                <Loader2 size={12} className="animate-spin" />
-              ) : (
-                <Sparkles size={12} />
-              )}
-              {aiSummary
-                ? (language === 'ar' ? 'تم التلخيص' : 'Summarized')
-                : (language === 'ar' ? 'تلخيص بالذكاء' : 'AI Summary')
-              }
-            </button>
+          {/* Show more / less */}
+          <div className="flex items-center mt-3">
+            {video.description.length > 120 && (
+              <button
+                onClick={() => setShowDescription(!showDescription)}
+                className="text-sm font-bold text-primary flex items-center gap-1 hover:underline"
+              >
+                {showDescription ? <>{t('hide_description')} <ChevronUp size={14} /></> : <>{t('show_more')} <ChevronDown size={14} /></>}
+              </button>
+            )}
           </div>
-
-          {/* AI Summary Card */}
-          <AnimatePresence>
-            {aiSummary && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden"
-              >
-                <div className="mt-3 bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-xl p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
-                        <Sparkles size={10} className="text-primary" />
-                      </div>
-                      <span className="text-xs font-bold text-primary">
-                        {language === 'ar' ? 'ملخص ذكي' : 'AI Summary'}
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => setAiSummary(null)}
-                      className="p-1 hover:bg-primary/10 rounded-md transition-colors text-muted-foreground hover:text-foreground"
-                    >
-                      <X size={12} />
-                    </button>
-                  </div>
-                  <p className="text-sm text-foreground/80 leading-relaxed">{aiSummary}</p>
-                </div>
-              </motion.div>
-            )}
-            {isSummarizing && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="mt-3 space-y-2"
-              >
-                <Skeleton className="h-3 w-full" />
-                <Skeleton className="h-3 w-5/6" />
-                <Skeleton className="h-3 w-4/6" />
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
       )}
 

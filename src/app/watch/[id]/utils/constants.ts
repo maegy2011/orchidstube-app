@@ -1,11 +1,3 @@
-// ─── Tab type ──────────────────────────────────────────────
-
-export type ContentTab = 'overview' | 'notes' | 'comments';
-
-// ─── Comment sort ──────────────────────────────────────────
-
-export type CommentSort = 'top' | 'newest';
-
 // ─── Keyboard shortcuts data ──────────────────────────────
 
 export const SHORTCUTS = [

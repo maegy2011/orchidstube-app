@@ -5,9 +5,6 @@ import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import {
   Clock,
-  Eye,
-  MessageSquare,
-  BookmarkPlus,
   ArrowUp,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -29,9 +26,8 @@ import { EyeProtection } from '@/components/ui/eye-protection';
 import AddToPlaylistModal from '@/components/playlists/AddToPlaylistModal';
 
 import type { WatchClientProps } from './types';
-import { formatDuration, extractHashtags, extractChapters } from './utils/format.tsx';
+import { formatDuration, extractChapters } from './utils/format.tsx';
 import { isValidDateString } from './utils/time';
-import { ContentTab, CommentSort } from './utils/constants';
 import { useVideoPlayer } from './hooks/useVideoPlayer';
 import { useNotesManagement } from './hooks/useNotesManagement';
 import { useVideoData } from './hooks/useVideoData';
@@ -40,9 +36,7 @@ import WatchSkeleton from './components/WatchSkeleton';
 import WatchErrorStates from './components/WatchErrorStates';
 import VideoPlayerSection from './components/VideoPlayerSection';
 import VideoInfoSection from './components/VideoInfoSection';
-import CommentsSection from './components/CommentsSection';
 import RelatedVideos from './components/RelatedVideos';
-import OverviewTabContent from './components/OverviewTabContent';
 import MiniPlayer from './components/MiniPlayer';
 import ShortcutsDialog from './components/ShortcutsDialog';
 
@@ -94,15 +88,11 @@ export default function WatchClient({
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isWatchLocked, setIsWatchLocked] = useState(false);
-  const [activeTab, setActiveTab] = useState<ContentTab>('overview');
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [theaterMode, setTheaterMode] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [showMiniPlayer, setShowMiniPlayer] = useState(false);
   const [miniPlayerDismissed, setMiniPlayerDismissed] = useState(false);
-  const [commentSort, setCommentSort] = useState<CommentSort>('top');
-  const [aiSummary, setAiSummary] = useState<string | null>(null);
-  const [isSummarizing, setIsSummarizing] = useState(false);
 
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -115,7 +105,10 @@ export default function WatchClient({
 
   // ─── Notes ───
   const videoNotes: VideoNote[] = isLoaded ? getNotesByVideoId(videoId) : [];
-  notesCount.current = videoNotes.length;
+
+  useEffect(() => {
+    notesCount.current = videoNotes.length;
+  }, [videoNotes.length]);
 
   const notes = useNotesManagement({
     videoId, video, videoNotes,
@@ -212,65 +205,24 @@ export default function WatchClient({
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
   const scrollToPlayer = () => videoContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  const handleAISummarize = async () => {
-    if (!video?.description || aiSummary) return;
-    setIsSummarizing(true);
-    try {
-      const res = await fetch('/api/ai/summarize', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: video.description, title: video.title }),
-      });
-      if (!res.ok) throw new Error('Failed');
-      const data = await res.json();
-      setAiSummary(data.summary || data.text || '');
-    } catch {
-      toast.error(language === 'ar' ? 'فشل تلخيص الفيديو' : 'Failed to summarize');
-    } finally {
-      setIsSummarizing(false);
-    }
-  };
-
   const handleSeekTo = (seconds: number) => {
     player.playerRef.current?.seekTo(seconds, true);
     player.playerRef.current?.playVideo();
   };
 
   // ─── Derived data ───
-  const descriptionHashtags = useMemo(() => {
-    if (!video?.description) return [];
-    return extractHashtags(video.description);
-  }, [video?.description]);
-
   const chapters = useMemo(() => {
     if (!video?.description) return [];
     return extractChapters(video.description);
   }, [video?.description]);
 
   const videoProgress = (video?.duration && video.duration > 0) ? (player.currentTime / video.duration) * 100 : 0;
-  const hasRelated = video?.relatedVideos && video.relatedVideos.length > 0;
-  const hasComments = video?.comments && video.comments.length > 0;
-  const channelUrl = video?.channelId ? `https://www.youtube.com/channel/${video.channelId}` : null;
-  const hasValidViews = video?.views && video.views !== '0';
-  const hasValidLikes = video?.likes && video.likes !== '0';
   const hasValidDate = isValidDateString(video?.uploadDate);
   const hasValidDuration = video?.duration && video.duration > 0;
   const hasValidSubscribers = video?.channelSubscribers && video.channelSubscribers.length > 0 && video.channelSubscribers !== '0';
-
-  const sortedComments = useMemo(() => {
-    if (!video?.comments) return [];
-    const c = [...video.comments];
-    if (commentSort === 'newest') c.reverse();
-    return c;
-  }, [video?.comments, commentSort]);
-
-  const tabItems = useMemo(() => {
-    const items: { id: ContentTab; label: string; icon: React.ReactNode; count?: number }[] = [
-      { id: 'overview' as ContentTab, label: (t as any)('overview'), icon: <Eye size={14} /> },
-      { id: 'notes', label: t('smart_notes'), icon: <BookmarkPlus size={14} />, count: videoNotes.length || undefined },
-      { id: 'comments', label: t('comments'), icon: <MessageSquare size={14} />, count: (video?.comments?.length) || undefined },
-    ];
-    return items;
-  }, [videoNotes.length, video?.comments?.length, t]);
+  const hasValidViews = video?.views && video.views !== '0';
+  const hasValidLikes = video?.likes && video.likes !== '0';
+  const channelUrl = video?.channelId ? `https://www.youtube.com/channel/${video.channelId}` : null;
 
   // ─── Notes section props ───
   const notesSectionProps = {
@@ -342,8 +294,7 @@ export default function WatchClient({
               toggleSubscription={toggleSubscription} subscribing={subscribing} isSubscribed={isSubscribed}
               showShareModal={showShareModal} setShowShareModal={setShowShareModal}
               showShortcuts={showShortcuts} setShowShortcuts={setShowShortcuts}
-              handleAISummarize={handleAISummarize} aiSummary={aiSummary} setAiSummary={setAiSummary}
-              isSummarizing={isSummarizing} chapters={chapters} descriptionHashtags={descriptionHashtags}
+              chapters={chapters}
               videoContainerRef={videoContainerRef}
               hasValidViews={hasValidViews} hasValidLikes={hasValidLikes}
               hasValidDate={hasValidDate} hasValidSubscribers={hasValidSubscribers}
@@ -351,45 +302,10 @@ export default function WatchClient({
               onShowPlaylist={() => setShowPlaylistModal(true)}
             />
 
-            {/* ── Tab Bar ── */}
-            <div className="px-4 lg:px-0 -mb-4">
-              <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-lg border-b border-border/40 shadow-sm shadow-border/20 rounded-none lg:rounded-xl overflow-hidden">
-                <div className="flex items-center gap-1">
-                  {tabItems.map((tab) => (
-                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={cn("relative flex items-center gap-2 px-4 py-2.5 text-sm font-semibold transition-colors rounded-xl", activeTab === tab.id ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50")}>
-                      {tab.icon}
-                      <span>{tab.label}</span>
-                      {tab.count !== undefined && tab.count > 0 && (
-                        <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full font-bold", activeTab === tab.id ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground")}>{tab.count}</span>
-                      )}
-                      {activeTab === tab.id && <motion.div layoutId="active-tab" className="absolute bottom-0 left-2 right-2 h-[2px] bg-primary rounded-full" />}
-                    </button>
-                  ))}
-                </div>
-              </div>
+            {/* ── Smart Notes ── */}
+            <div className="px-4 lg:px-0 mt-4">
+              <NotesSection {...notesSectionProps} />
             </div>
-
-            {/* ── Tab Content ── */}
-            <AnimatePresence mode="wait">
-              <motion.div key={activeTab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
-                {activeTab === 'overview' && (
-                  <OverviewTabContent
-                    t={t} language={language}
-                    hasComments={hasComments} hasRelated={hasRelated} chapters={chapters}
-                    sortedComments={sortedComments} commentSort={commentSort} setCommentSort={setCommentSort}
-                    video={video} onShowAllComments={() => setActiveTab('comments')}
-                  />
-                )}
-                {activeTab === 'notes' && (
-                  <div className="px-4 lg:px-0"><NotesSection {...notesSectionProps} /></div>
-                )}
-                {activeTab === 'comments' && (
-                  <div className="px-4 lg:px-0">
-                    <CommentsSection sortedComments={sortedComments} commentSort={commentSort} setCommentSort={setCommentSort} t={t} language={language} />
-                  </div>
-                )}
-              </motion.div>
-            </AnimatePresence>
           </div>
 
           {/* ═══════ Right Sidebar ═══════ */}

@@ -33,7 +33,7 @@ export default function AddToPlaylistModal({
   onOpenChange,
   video,
 }: AddToPlaylistModalProps) {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const { playlists, isLoaded, isInPlaylist, addToPlaylist, removeFromPlaylist, createPlaylist } =
     usePlaylists();
 
@@ -161,7 +161,9 @@ export default function AddToPlaylistModal({
                         {playlist.name}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {t("videoCount", { count: playlist.videoCount })}
+                        {playlist.videoCount === 1
+                          ? (language === 'ar' ? 'فيديو واحد' : '1 video')
+                          : (language === 'ar' ? `${playlist.videoCount} فيديو` : `${playlist.videoCount} videos`)}
                       </p>
                     </div>
 
