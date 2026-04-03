@@ -120,7 +120,7 @@ export default function WatchLaterPage() {
               <div className="flex flex-col items-center justify-center py-40 space-y-4">
                 <div className="relative">
                   <div className="w-12 h-12 border-4 border-blue-100 dark:border-blue-900/30 rounded-full"></div>
-                  <div className="absolute top-0 left-0 w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="absolute top-0 start-0 w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                 </div>
                 <p className="text-muted-foreground text-sm font-medium animate-pulse tracking-wide">{t("loading")}</p>
               </div>

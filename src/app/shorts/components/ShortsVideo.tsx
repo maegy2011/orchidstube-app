@@ -235,7 +235,7 @@ export default function ShortsVideo({
             className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 backdrop-blur-[1px] pointer-events-none"
           >
             <div className="w-16 h-16 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center border border-white/20">
-              <Play className="w-7 h-7 text-white ml-1" />
+              <Play className="w-7 h-7 text-white ms-1" />
             </div>
           </motion.div>
         )}

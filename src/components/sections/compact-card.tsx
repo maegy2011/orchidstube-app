@@ -76,7 +76,7 @@ const CompactCard = memo(function CompactCard({ video, index }: CompactCardProps
             <div
               className={cn(
                 "absolute bottom-1.5 bg-black/85 backdrop-blur-sm text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md",
-                direction === "rtl" ? "left-1.5" : "right-1.5"
+                "end-1.5"
               )}
             >
               {video.duration}
@@ -94,7 +94,7 @@ const CompactCard = memo(function CompactCard({ video, index }: CompactCardProps
               isSaved
                 ? "bg-primary text-primary-foreground shadow-md"
                 : "bg-black/60 text-white hover:bg-black/80 backdrop-blur-sm",
-              direction === "rtl" ? "right-1.5" : "right-1.5"
+              "end-1.5"
             )}
           >
             {isSaved ? <Check size={14} /> : <Clock size={14} />}
@@ -103,7 +103,7 @@ const CompactCard = memo(function CompactCard({ video, index }: CompactCardProps
           {/* Play overlay */}
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
             <div className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center scale-50 group-hover:scale-100 transition-transform duration-300 shadow-lg">
-              <Play className="text-white ml-0.5" size={18} fill="currentColor" />
+              <Play className="text-white ms-0.5" size={18} fill="currentColor" />
             </div>
           </div>
         </div>

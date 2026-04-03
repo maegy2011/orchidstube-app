@@ -661,7 +661,7 @@ export default function ContentFilterAdminPage() {
                   <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input 
                     placeholder="بحث في القائمة..." 
-                    className="bg-muted border-border pr-9 focus:ring-red-600"
+                    className="bg-muted border-border pe-9 focus:ring-red-600"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -747,7 +747,7 @@ export default function ContentFilterAdminPage() {
                   <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input 
                     placeholder="بحث في الكلمات..." 
-                    className="bg-muted border-border pr-9 focus:ring-red-600"
+                    className="bg-muted border-border pe-9 focus:ring-red-600"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -791,7 +791,7 @@ export default function ContentFilterAdminPage() {
       </main>
 
       {/* Mobile Footer Stats */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-xl border-t border-border p-4 md:hidden z-50">
+      <footer className="fixed bottom-0 inset-x-0 bg-background/80 backdrop-blur-xl border-t border-border p-4 md:hidden z-50">
         <div className="flex items-center justify-around">
           <Link href="/" className="flex flex-col items-center gap-1 text-muted-foreground">
             <Home className="w-5 h-5" />

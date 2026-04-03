@@ -59,13 +59,13 @@ export default function NotesHeader({
         </button>
 
         <div className="relative group w-full md:w-80">
-          <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#606060] group-focus-within:text-red-600 transition-colors" />
+          <Search className="absolute start-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#606060] group-focus-within:text-red-600 transition-colors" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t("search_notes")}
-            className="w-full pr-11 pl-10 py-3 bg-white border border-[#e5e5e5] rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-600 transition-all shadow-sm"
+            className="w-full pe-11 ps-10 py-3 bg-white border border-[#e5e5e5] rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-600 transition-all shadow-sm"
           />
           <AnimatePresence>
             {searchQuery && (
@@ -74,7 +74,7 @@ export default function NotesHeader({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 onClick={() => setSearchQuery('')}
-                className="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 hover:bg-gray-100 rounded-xl text-gray-400 hover:text-gray-600 transition-colors"
+                className="absolute end-3 top-1/2 -translate-y-1/2 p-1.5 hover:bg-gray-100 rounded-xl text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
               </motion.button>

@@ -51,7 +51,7 @@ export default function LocationPicker({
           disabled={disabled}
           onClick={onToggle}
           className={cn(
-            "w-full bg-muted border border-border/50 rounded-xl px-4 py-2 text-sm text-left flex items-center justify-between hover:bg-muted/80 transition-all",
+            "w-full bg-muted border border-border/50 rounded-xl px-4 py-2 text-sm text-start flex items-center justify-between hover:bg-muted/80 transition-all",
             disabled && "opacity-50 cursor-not-allowed"
           )}
         >
@@ -93,7 +93,7 @@ export default function LocationPicker({
                       key={option}
                       onClick={() => onSelect(option)}
                       className={cn(
-                        "w-full px-4 py-2 text-sm text-left hover:bg-muted transition-colors",
+                        "w-full px-4 py-2 text-sm text-start hover:bg-muted transition-colors",
                         value === option && "bg-emerald-500/10 text-emerald-600 font-semibold"
                       )}
                     >

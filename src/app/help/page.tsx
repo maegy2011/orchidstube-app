@@ -61,13 +61,13 @@ export default function HelpPage() {
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-3xl font-bold mb-8">بماذا يمكننا مساعدتك؟</h1>
             <div className="relative max-w-2xl mx-auto">
-              <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
+              <Search className="absolute start-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
               <input 
                 type="text"
                 placeholder="ابحث عن حل لمشكلتك..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full py-4 pr-12 pl-4 rounded-2xl border-none shadow-xl bg-background focus:ring-2 focus:ring-red-500 outline-none transition-all text-lg"
+                className="w-full py-4 ps-12 pe-4 rounded-2xl border-none shadow-xl bg-background focus:ring-2 focus:ring-red-500 outline-none transition-all text-lg"
               />
             </div>
           </div>
@@ -79,7 +79,7 @@ export default function HelpPage() {
             {topics.map((topic, i) => (
               <button 
                 key={i}
-                className="flex items-center justify-between p-6 bg-card border border-border rounded-2xl hover:bg-muted hover:border-red-500/30 transition-all group text-right"
+                className="flex items-center justify-between p-6 bg-card border border-border rounded-2xl hover:bg-muted hover:border-red-500/30 transition-all group text-end"
               >
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-red-500/10 rounded-xl group-hover:bg-red-500/20 transition-colors">

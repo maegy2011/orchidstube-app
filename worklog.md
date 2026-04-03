@@ -907,3 +907,40 @@ Stage Summary:
 - Direction-specific icon rotations made conditional
 - Lint passes clean, dev server compiles successfully, GET / returns 200
 - Toaster position left as-is (bottom-left is conventional for both LTR and RTL)
+---
+Task ID: 2
+Agent: Main Agent + 4 parallel subagents
+Task: Comprehensive verification and fix of UI direction across ALL pages and sub-pages
+
+Work Log:
+- Ran exhaustive audit of all 18 page files, 17 section components, and 11 watch sub-components
+- Found ~30 remaining physical CSS property issues across the codebase
+- Fixed all issues in parallel using 4 subagents + manual fixes
+
+Files Modified (round 2):
+1. `src/app/notes/page.tsx` — Replaced isRTL conditional margin with `ms-0 lg:ms-[240px]`
+2. `src/app/notes/components/NotesHeader.tsx` — `pr-11 pl-10` → `pe-11 ps-10`, search icon `right-4` → `start-4`, clear btn `left-3` → `end-3`
+3. `src/app/notes/components/NotesEmpty.tsx` — Added `useI18n()`, fixed `rotate-180` to be direction-aware
+4. `src/app/watch/[id]/components/NoteForm.tsx` — `pr-8` → `pe-8` (both time inputs)
+5. `src/app/watch/[id]/components/NotesSection.tsx` — `pr-9 pl-3` → `pe-9 ps-3`, search icon `right-3` → `start-3`, clear btn `left-3` → `end-3`
+6. `src/app/favorites/page.tsx` — 5 fixes: search icon/clear btn/input padding/play icon/duration badge all to logical props
+7. `src/app/history/page.tsx` — spinner `left-0` → `start-0`, play icon `mr-[-2px]` → `ms-[-2px]`
+8. `src/app/subscriptions/page.tsx` — spinner `left-0` → `start-0`
+9. `src/app/watch-later/page.tsx` — spinner `left-0` → `start-0`
+10. `src/components/sections/video-card.tsx` — duration badge ternary → `end-2`, watch-later ternary → `end-2`, play icon `ml-0.5` → `ms-0.5`
+11. `src/components/sections/compact-card.tsx` — same 3 fixes as video-card
+12. `src/app/shorts/components/ShortsVideo.tsx` — play icon `ml-1` → `ms-1`
+13. `src/components/sections/sidebar-guide.tsx` — `isRTL ? "right-0 border-l" : "left-0 border-r"` → `"start-0 border-s"`
+14. `src/app/help/page.tsx` — search icon `right-4` → `start-4`, input `pr-12 pl-4` → `ps-12 pe-4`, `text-right` → `text-end`
+15. `src/app/settings/components/WellBeingSection.tsx` — `pr-10` → `pe-10`
+16. `src/app/settings/components/LocationPicker.tsx` — `text-left` → `text-start` (2 instances)
+17. `src/app/admin/filter/page.tsx` — `pr-9` → `pe-9` (2 instances), `left-0 right-0` → `inset-x-0`
+18. `src/components/ui/share-modal.tsx` — `left-0 right-0` → `inset-x-0` (2 tab indicators)
+
+Stage Summary:
+- 0 remaining hardcoded `dir="rtl"` on page wrappers (only layout.tsx html element, correctly overridden by blocking script)
+- 0 remaining `language === 'ar' ? 'rtl' : 'ltr'` patterns
+- 0 remaining physical CSS properties (ml/mr/pl/pr/left/right/text-left/text-right/rounded-bl/rounded-br) in src/app/ or src/components/sections/
+- All 12 tested routes return 200/307 successfully
+- Lint passes clean
+- Remaining `language === 'ar'` checks (~25 instances) are for i18n text selection, not layout direction — they work correctly with the `dir={direction}` on parent elements

@@ -183,7 +183,7 @@ export default function ShareModal({ isOpen, onClose, videoId, videoTitle, thumb
                 {activeTab === 'share' && (
                   <motion.div 
                     layoutId="shareTab"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-600" 
+                    className="absolute bottom-0 inset-x-0 h-0.5 bg-red-600"
                   />
                 )}
               </button>
@@ -200,7 +200,7 @@ export default function ShareModal({ isOpen, onClose, videoId, videoTitle, thumb
                 {activeTab === 'embed' && (
                   <motion.div 
                     layoutId="shareTab"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-600" 
+                    className="absolute bottom-0 inset-x-0 h-0.5 bg-red-600"
                   />
                 )}
               </button>

@@ -90,13 +90,13 @@ export default function FavoritesPage() {
               </div>
 
               <div className="relative group w-full md:w-96">
-                <Search className={`absolute ${direction === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-red-600 transition-colors`} />
+                <Search className={`absolute start-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-red-600 transition-colors`} />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={t("searchFavorites") + "..."}
-                  className={`w-full ${direction === 'rtl' ? 'pr-11 pl-10' : 'pl-11 pr-10'} py-3.5 bg-card border border-border rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-600 transition-all shadow-sm`}
+                  className={`w-full ps-11 pe-10 py-3.5 bg-card border border-border rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-600 transition-all shadow-sm`}
                 />
                 <AnimatePresence>
                   {searchQuery && (
@@ -105,7 +105,7 @@ export default function FavoritesPage() {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.8 }}
                       onClick={() => setSearchQuery('')}
-                      className={`absolute ${direction === 'rtl' ? 'left-3' : 'right-3'} top-1/2 -translate-y-1/2 p-2 hover:bg-muted rounded-xl text-muted-foreground transition-colors`}
+                      className={`absolute end-3 top-1/2 -translate-y-1/2 p-2 hover:bg-muted rounded-xl text-muted-foreground transition-colors`}
                     >
                       <X size={14} />
                     </motion.button>
@@ -181,10 +181,10 @@ export default function FavoritesPage() {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-500 flex items-center justify-center">
                           <div className="w-14 h-14 bg-red-600 text-white rounded-full flex items-center justify-center shadow-2xl scale-90 group-hover/card:scale-100 transition-transform duration-500 shadow-red-600/40">
-                            <Play size={28} className="fill-current mr-[-2px]" />
+                            <Play size={28} className="fill-current ms-[-2px]" />
                           </div>
                         </div>
-                        <div className="absolute bottom-3 left-3 px-2 py-1 bg-black/70 backdrop-blur-md text-white text-[10px] font-bold rounded-lg flex items-center gap-1.5">
+                        <div className="absolute bottom-3 start-3 px-2 py-1 bg-black/70 backdrop-blur-md text-white text-[10px] font-bold rounded-lg flex items-center gap-1.5">
                           <Clock size={10} />
                           {favorite.duration}
                         </div>

@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { History, Search, RefreshCw, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useI18n } from '@/lib/i18n-context';
 
 interface NotesEmptyProps {
   isLoaded: boolean;
@@ -20,6 +21,7 @@ export default function NotesEmpty({
   clearFilters,
   t,
 }: NotesEmptyProps) {
+  const { direction } = useI18n();
   if (!isLoaded) {
     return (
       <div className="flex flex-col items-center justify-center py-32 space-y-4">
@@ -50,7 +52,7 @@ export default function NotesEmpty({
           href="/"
           className="inline-flex items-center gap-2 px-8 py-3.5 bg-red-600 text-white rounded-2xl font-bold hover:bg-red-700 active:scale-95 transition-all shadow-lg shadow-red-600/20"
         >
-          <ArrowRight size={18} className="rotate-180" />
+          <ArrowRight size={18} className={direction === 'rtl' ? 'rotate-180' : ''} />
           {t("discoverVideos")}
         </Link>
       </motion.div>

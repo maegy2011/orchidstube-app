@@ -135,7 +135,7 @@ export default function HistoryPage() {
               <div className="flex flex-col items-center justify-center py-40 space-y-4">
                 <div className="relative">
                   <div className="w-12 h-12 border-4 border-red-100 rounded-full"></div>
-                  <div className="absolute top-0 left-0 w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="absolute top-0 start-0 w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
                 </div>
                 <p className="text-muted-foreground text-sm font-medium animate-pulse tracking-wide">{t("loadingHistory")}</p>
               </div>
@@ -205,7 +205,7 @@ export default function HistoryPage() {
                         />
                         <div className="absolute inset-0 bg-black/0 group-hover/item:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover/item:opacity-100">
                           <div className="w-14 h-14 bg-red-600 text-white rounded-full flex items-center justify-center shadow-2xl scale-90 group-hover/item:scale-100 transition-transform duration-500 shadow-red-600/40">
-                            <Play size={28} className="fill-current mr-[-2px]" />
+                            <Play size={28} className="fill-current ms-[-2px]" />
                           </div>
                         </div>
                       </div>

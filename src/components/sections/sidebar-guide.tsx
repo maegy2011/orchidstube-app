@@ -360,7 +360,7 @@ export default function SidebarGuide({
               "fixed z-[7000] flex flex-col overflow-hidden",
               "bg-background/95 backdrop-blur-md",
               "border-border/40",
-              isRTL ? "right-0 border-l" : "left-0 border-r",
+              "start-0 border-s",
               "scrollbar-thin scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/40"
             )}
             style={{

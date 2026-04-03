@@ -42,7 +42,6 @@ function parseTime(timeStr: string): number {
 export default function NotesPage() {
   const { getAllNotes, deleteNote, updateNote, isLoaded } = useNotes();
   const { showGregorianDate, showHijriDate, hijriOffset, language, direction, t } = useI18n();
-  const isRTL = direction === 'rtl';
   const mainPaddingTop = useTopPadding();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { marginClass } = useSidebarLayout(sidebarOpen);
@@ -241,7 +240,7 @@ export default function NotesPage() {
       <Masthead onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       <SidebarGuide isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
-      <main className={`${isRTL ? 'mr-0 lg:mr-[240px]' : 'ml-0 lg:ml-[240px]'} ${mainPaddingTop} pb-24 px-4 md:px-8 transition-all duration-300`}>
+      <main className={`ms-0 lg:ms-[240px] ${mainPaddingTop} pb-24 px-4 md:px-8 transition-all duration-300`}>
         <div className="max-w-5xl mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: -20 }}

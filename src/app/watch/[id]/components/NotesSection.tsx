@@ -248,17 +248,17 @@ export default function NotesSection({
           {/* ─── Search ─── */}
           {filteredNotes.length >= 3 && (
             <div className="relative">
-              <Search size={14} className="absolute top-1/2 -translate-y-1/2 right-3 text-muted-foreground pointer-events-none" />
+              <Search size={14} className="absolute top-1/2 -translate-y-1/2 start-3 text-muted-foreground pointer-events-none" />
               <input
                 type="text"
                 placeholder={t('search_notes')}
                 value={noteSearch}
                 onChange={(e) => setNoteSearch(e.target.value)}
-                className="w-full pr-9 pl-3 py-2 bg-muted/50 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                className="w-full pe-9 ps-3 py-2 bg-muted/50 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 dir={direction}
               />
               {noteSearch && (
-                <button onClick={() => setNoteSearch('')} className="absolute top-1/2 -translate-y-1/2 left-3 text-muted-foreground hover:text-foreground">
+                <button onClick={() => setNoteSearch('')} className="absolute top-1/2 -translate-y-1/2 end-3 text-muted-foreground hover:text-foreground">
                   <X size={14} />
                 </button>
               )}

@@ -243,7 +243,7 @@ function ParentalPinSection() {
                   value={newPin}
                   onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   placeholder="• • • •"
-                  className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-rose-500/30 focus:border-rose-500/50 transition-all pr-10"
+                  className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-rose-500/30 focus:border-rose-500/50 transition-all pe-10"
                   autoFocus
                 />
                 <button

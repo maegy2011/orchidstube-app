@@ -83,7 +83,7 @@ export function NoteForm({
                   type="text"
                   value={noteStartTime}
                   onChange={(e) => setNoteStartTime(e.target.value)}
-                  className="w-full px-3 py-1.5 pr-8 bg-muted/50 border border-border rounded-lg text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  className="w-full px-3 py-1.5 pe-8 bg-muted/50 border border-border rounded-lg text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                   placeholder="0:00"
                   dir="ltr"
                 />
@@ -103,7 +103,7 @@ export function NoteForm({
                   type="text"
                   value={noteEndTime}
                   onChange={(e) => setNoteEndTime(e.target.value)}
-                  className="w-full px-3 py-1.5 pr-8 bg-muted/50 border border-border rounded-lg text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  className="w-full px-3 py-1.5 pe-8 bg-muted/50 border border-border rounded-lg text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                   placeholder="0:00"
                   dir="ltr"
                 />

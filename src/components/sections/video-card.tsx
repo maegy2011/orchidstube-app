@@ -89,7 +89,7 @@ const VideoCard = memo(function VideoCard({
           {video.duration && video.duration !== "0:00" && (
             <div className={cn(
               "absolute bottom-2 bg-black/85 backdrop-blur-sm text-white text-[11px] font-bold px-1.5 py-0.5 rounded-md",
-              direction === "rtl" ? "left-2" : "right-2"
+              "end-2"
             )}>
               {video.duration}
             </div>
@@ -106,7 +106,7 @@ const VideoCard = memo(function VideoCard({
               isInWatchLater
                 ? "bg-primary text-primary-foreground shadow-lg"
                 : "bg-black/60 text-white hover:bg-black/80 backdrop-blur-sm",
-              direction === "rtl" ? "right-2" : "right-2"
+              "end-2"
             )}
             title={t("watchLater")}
             aria-label={isInWatchLater ? t("added_to_watch_later") : t("watchLater")}
@@ -139,7 +139,7 @@ const VideoCard = memo(function VideoCard({
           {/* Play overlay */}
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
             <div className="w-14 h-14 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center scale-50 group-hover:scale-100 transition-transform duration-300 shadow-xl">
-              <Play className="text-white ml-0.5" size={24} fill="currentColor" />
+              <Play className="text-white ms-0.5" size={24} fill="currentColor" />
             </div>
           </div>
 
