@@ -1371,3 +1371,26 @@ Stage Summary:
 - Providers with good avatars (youtube-sr with valid URL, ytube-noapi, youtubei.js) skip the supplement call
 - ESLint: 0 errors
 - Dev server: compiles successfully
+---
+Task ID: 11b
+Agent: Main Agent
+Task: Fix channel image on watch page — use homepage method (ytube-noapi search)
+
+Work Log:
+- Previous fix used `ytubeNoApi.getVideo(id)` to supplement avatar — but that API is BROKEN (returns "Unknown" title, no data)
+- Investigated: `ytubeNoApi.getVideo()` = broken ❌, `ytubeNoApi.searchVideos()` = works ✅
+- The homepage uses `searchVideos()` not `getVideo()` — that's why homepage avatars work but watch page doesn't
+- Root cause: youtube-sr (#1 provider) returns video details with `channel.icon.url = undefined`, then returns early without ever trying the working search method
+- Rewrote `youtube-details.ts`:
+  - `fetchChannelAvatarFromSearch(channelName)`: searches by channel name via `ytubeNoApi.searchVideos()`, extracts `channelThumbnail` from results, caches in memory
+  - `ensureChannelAvatar(channelName, currentAvatar)`: if current URL starts with "http", keeps it; otherwise calls search-based fetcher
+  - All 5 provider branches now call `ensureChannelAvatar()` before returning
+- Added in-memory `avatarCache` (Map) keyed by channel name to avoid redundant searches
+- Tested: both test videos return real yt3.ggpht.com avatar URLs ✅
+
+Stage Summary:
+- 1 file modified: `src/lib/youtube-details.ts`
+- Channel avatar now fetched via `ytubeNoapi.searchVideos()` — same method as homepage
+- Memory cache prevents redundant search API calls for the same channel
+- ESLint: 0 errors
+- API test: both videos return real avatar URLs

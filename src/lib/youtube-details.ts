@@ -25,22 +25,57 @@ export type VideoDetail = {
   comments: any[];
 };
 
+// In-memory cache for channel avatar URLs keyed by channel name
+const avatarCache = new Map<string, string>();
+
 /**
- * Supplement missing channel avatar using ytube-noapi (same method as the homepage).
- * The homepage relies on ytube-noapi as its primary source for channelThumbnail URLs.
- * This function tries ytube-noapi.getVideo() only to extract channelThumbnail.
+ * Fetch a real channel avatar using ytube-noapi search (same method as the homepage).
+ * The homepage uses `ytubeNoApi.searchVideos()` which returns real `channelThumbnail` URLs
+ * scraped from YouTube HTML. We search by channel name, grab the thumbnail from the first
+ * result that has one, and cache it for subsequent requests.
  */
-async function supplementChannelAvatar(videoId: string, currentAvatar: string): Promise<string> {
-  if (currentAvatar && currentAvatar.length > 10) return currentAvatar; // Already have a real URL
+async function fetchChannelAvatarFromSearch(channelName: string): Promise<string> {
+  if (!channelName || channelName === 'Unknown Channel') return '';
+
+  // Check cache first
+  const cached = avatarCache.get(channelName);
+  if (cached) return cached;
 
   try {
-    const video = await ytubeNoApi.getVideo(videoId);
-    if (video?.channelThumbnail) return video.channelThumbnail;
+    const results = await ytubeNoApi.searchVideos(channelName, 3);
+    if (!results) return '';
+
+    // Find the first result with a channelThumbnail (same channel or close match)
+    const match = results.find((v: any) =>
+      v.channelThumbnail &&
+      (v.channelName?.toLowerCase() === channelName.toLowerCase())
+    ) || results.find((v: any) => v.channelThumbnail);
+
+    if (match?.channelThumbnail) {
+      avatarCache.set(channelName, match.channelThumbnail);
+      // Also cache by any alternate channel name spelling
+      if (match.channelName && match.channelName !== channelName) {
+        avatarCache.set(match.channelName, match.channelThumbnail);
+      }
+      return match.channelThumbnail;
+    }
   } catch {
-    // ytube-noapi supplement failed — keep whatever we had
+    // Search failed silently
   }
 
-  return currentAvatar;
+  return '';
+}
+
+/**
+ * Ensure we have a real channel avatar URL.
+ * Uses ytube-noapi search (homepage method) if the current avatar is missing/invalid.
+ */
+async function ensureChannelAvatar(channelName: string, currentAvatar: string): Promise<string> {
+  // Already have a valid-looking URL
+  if (currentAvatar && currentAvatar.startsWith('http')) return currentAvatar;
+
+  // Try ytube-noapi search (same method as homepage)
+  return fetchChannelAvatarFromSearch(channelName) || currentAvatar;
 }
 
 export async function getVideoDetails(id: string, lang?: string, location?: string): Promise<VideoDetail | null> {
@@ -48,8 +83,8 @@ export async function getVideoDetails(id: string, lang?: string, location?: stri
   try {
     const video = await YouTubeSR.getVideo(`https://www.youtube.com/watch?v=${id}`);
     if (video && video.title) {
-      const rawAvatar = video.channel?.icon?.url || '';
-      const channelAvatar = await supplementChannelAvatar(id, rawAvatar);
+      const channelName = video.channel?.name || 'Unknown Channel';
+      const channelAvatar = await ensureChannelAvatar(channelName, video.channel?.icon?.url || '');
       return {
         id: video.id || id,
         title: video.title || 'Unknown',
@@ -59,8 +94,8 @@ export async function getVideoDetails(id: string, lang?: string, location?: stri
         views: video.views?.toLocaleString() || '0',
         likes: '0',
         uploadDate: video.uploadedAt || '',
-        channelName: video.channel?.name || 'Unknown Channel',
-        channelAvatar: channelAvatar || getDefaultChannelAvatar(video.channel?.name || 'Unknown'),
+        channelName,
+        channelAvatar,
         channelId: video.channel?.id || '',
         channelSubscribers: '',
         isVerified: false,
@@ -78,7 +113,8 @@ export async function getVideoDetails(id: string, lang?: string, location?: stri
   try {
     const result = await ytSearch({ videoId: id });
     if (result && result.title) {
-      const channelAvatar = await supplementChannelAvatar(id, '');
+      const channelName = result.author?.name || 'Unknown Channel';
+      const channelAvatar = await ensureChannelAvatar(channelName, '');
       return {
         id: result.videoId || id,
         title: result.title || 'Unknown',
@@ -88,8 +124,8 @@ export async function getVideoDetails(id: string, lang?: string, location?: stri
         views: result.views?.toLocaleString() || '0',
         likes: '0',
         uploadDate: result.ago || '',
-        channelName: result.author?.name || 'Unknown Channel',
-        channelAvatar: channelAvatar || getDefaultChannelAvatar(result.author?.name || 'Unknown'),
+        channelName,
+        channelAvatar,
         channelId: result.author?.url?.split('/').pop() || '',
         channelSubscribers: '',
         isVerified: false,
@@ -107,7 +143,8 @@ export async function getVideoDetails(id: string, lang?: string, location?: stri
   try {
     const result = await youtubeSearchApi.GetVideoDetails(id);
     if (result && result.title) {
-      const channelAvatar = await supplementChannelAvatar(id, '');
+      const channelName = (result as any).channelTitle || 'Unknown Channel';
+      const channelAvatar = await ensureChannelAvatar(channelName, '');
       return {
         id: id,
         title: result.title || 'Unknown',
@@ -117,8 +154,8 @@ export async function getVideoDetails(id: string, lang?: string, location?: stri
         views: '0',
         likes: '0',
         uploadDate: '',
-        channelName: (result as any).channelTitle || 'Unknown Channel',
-        channelAvatar: channelAvatar || getDefaultChannelAvatar((result as any).channelTitle || 'Unknown'),
+        channelName,
+        channelAvatar,
         channelId: result.channelId || '',
         channelSubscribers: '',
         isVerified: false,
@@ -136,6 +173,8 @@ export async function getVideoDetails(id: string, lang?: string, location?: stri
   try {
     const video = await ytubeNoApi.getVideo(id);
     if (video && video.title && video.title !== 'Unknown') {
+      const channelName = video.channelName || 'Unknown Channel';
+      const channelAvatar = await ensureChannelAvatar(channelName, video.channelThumbnail || '');
       return {
         id: video.id || id,
         title: video.title || 'Unknown',
@@ -145,8 +184,8 @@ export async function getVideoDetails(id: string, lang?: string, location?: stri
         views: video.viewsFormatted || video.views?.toString() || '0',
         likes: '0',
         uploadDate: video.publishedAt || '',
-        channelName: video.channelName || 'Unknown Channel',
-        channelAvatar: video.channelThumbnail || getDefaultChannelAvatar(video.channelName || 'Unknown'),
+        channelName,
+        channelAvatar,
         channelId: video.channelId || '',
         channelSubscribers: '',
         isVerified: false,
@@ -164,7 +203,6 @@ export async function getVideoDetails(id: string, lang?: string, location?: stri
   try {
     const yt = await getYouTube(lang, location);
     if (yt) {
-      // Ensure session context is updated
       if (lang) yt.session.context.client.hl = lang;
       if (location) yt.session.context.client.gl = location;
 
@@ -192,8 +230,9 @@ export async function getVideoDetails(id: string, lang?: string, location?: stri
       const primaryInfo = video.primary_info as any;
 
       if (basicInfo && basicInfo.title) {
+        const channelName = basicInfo.author || 'Unknown Channel';
         const rawAvatar = secondaryInfo?.author?.thumbnails?.[0]?.url || '';
-        const channelAvatar = await supplementChannelAvatar(id, rawAvatar);
+        const channelAvatar = await ensureChannelAvatar(channelName, rawAvatar);
         return {
           id: basicInfo.id || id,
           title: basicInfo.title || 'Unknown',
@@ -203,8 +242,8 @@ export async function getVideoDetails(id: string, lang?: string, location?: stri
           views: basicInfo.view_count?.toString() || '0',
           likes: primaryInfo?.short_view_count?.text || '0',
           uploadDate: primaryInfo?.published?.text || '',
-          channelName: basicInfo.author || 'Unknown Channel',
-          channelAvatar: channelAvatar || getDefaultChannelAvatar(basicInfo.author || 'Unknown'),
+          channelName,
+          channelAvatar,
           channelId: basicInfo.channel_id || '',
           channelSubscribers: secondaryInfo?.author?.subscribe_button?.subscriber_count?.text || '',
           isVerified: secondaryInfo?.author?.is_verified || false,
