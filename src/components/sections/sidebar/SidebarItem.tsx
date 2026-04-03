@@ -18,7 +18,6 @@ export interface SidebarItemProps {
   badgeColor?: string;
   isCollapsed?: boolean;
   mounted?: boolean;
-  isRTL?: boolean;
   theme?: string | undefined;
 }
 
@@ -35,7 +34,6 @@ export const SidebarItem = React.memo(function SidebarItem({
   badgeColor,
   isCollapsed = false,
   mounted = true,
-  isRTL = false,
   theme,
 }: SidebarItemProps) {
   // Theme-aware active styles
@@ -78,8 +76,7 @@ export const SidebarItem = React.memo(function SidebarItem({
         <motion.div
           layoutId="sidebar-active-indicator"
           className={cn(
-            "absolute w-[3px] h-5 rounded-full",
-            isRTL ? "right-0 rounded-r-none" : "left-0 rounded-l-none",
+            "absolute start-0 w-[3px] h-5 rounded-s-full rounded-e-full",
             indicatorColor
           )}
           transition={{ type: "spring", stiffness: 400, damping: 30 }}

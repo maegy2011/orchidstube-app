@@ -68,7 +68,7 @@ export function UserMenu() {
                 className="w-8 h-8 rounded-full object-cover ring-2 ring-background shadow-md"
               />
               {isIncognito && (
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center ring-2 ring-background">
+                <div className="absolute -top-1 -end-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center ring-2 ring-background">
                   <EyeOff size={8} className="text-white" />
                 </div>
               )}
@@ -82,7 +82,7 @@ export function UserMenu() {
             )}>
               {userInitial}
               {isIncognito && (
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center ring-2 ring-background">
+                <div className="absolute -top-1 -end-1 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center ring-2 ring-background">
                   <EyeOff size={8} className="text-amber-900" />
                 </div>
               )}
@@ -143,12 +143,12 @@ export function UserMenu() {
           )}
           <span>{isIncognito ? t('incognitoTurnOff') : t('incognitoTurnOn')}</span>
           <div className={cn(
-            "ml-auto w-8 h-[18px] rounded-full relative transition-colors",
+            "ms-auto w-8 h-[18px] rounded-full relative transition-colors",
             isIncognito ? "bg-amber-500" : "bg-muted"
           )}>
             <div className={cn(
-              "absolute top-[2px] w-[14px] h-[14px] bg-white rounded-full shadow-sm transition-transform",
-              isIncognito ? "translate-x-[16px]" : "translate-x-[2px]"
+              "absolute top-[2px] w-[14px] h-[14px] bg-white rounded-full shadow-sm transition-all",
+              isIncognito ? "inset-inline-start-[16px]" : "inset-inline-start-[2px]"
             )} />
           </div>
         </DropdownMenuItem>

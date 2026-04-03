@@ -416,7 +416,6 @@ export default function SidebarGuide({
                           badgeColor={item.badgeColor}
                           isCollapsed={true}
                           mounted={mounted}
-                          isRTL={isRTL}
                           theme={theme}
                         />
                       </React.Fragment>
@@ -470,7 +469,6 @@ export default function SidebarGuide({
                                     badgeColor={item.badgeColor}
                                     isCollapsed={false}
                                     mounted={mounted}
-                                    isRTL={isRTL}
                                     theme={theme}
                                   />
                                 ))}

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { PanelLeftClose, PanelLeftOpen, ChevronRight, ChevronLeft } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, ChevronRight, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ═══════════════════════════════════════════════════════
@@ -53,11 +53,11 @@ export function SidebarFooter({
       >
         {isCollapsed ? (
           <>
-            <PanelLeftOpen className="w-5 h-5" />
+            {isRTL ? <PanelRightOpen className="w-5 h-5" /> : <PanelLeftOpen className="w-5 h-5" />}
           </>
         ) : (
           <>
-            <PanelLeftClose className="w-5 h-5" />
+            {isRTL ? <PanelRightClose className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
             <span>{isRTL ? "تصغير القائمة" : "Collapse"}</span>
             {isRTL ? (
               <ChevronRight size={16} className="ms-auto" />

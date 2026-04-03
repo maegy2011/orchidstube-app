@@ -67,7 +67,6 @@ export const SearchBar = forwardRef<SearchBarHandle, SearchBarProps>(
       refreshRecentSearches,
       suggestions,
       direction,
-      isRtlLang,
       inputDirection,
     } = useSearch({ onSearch, externalLoading, searchQuery });
 
@@ -111,7 +110,7 @@ export const SearchBar = forwardRef<SearchBarHandle, SearchBarProps>(
                     value={localSearchQuery}
                     onChange={(e) => setLocalSearchQuery(e.target.value)}
                     onFocus={handleFocus}
-                    className={`flex-1 py-2.5 bg-transparent border-none outline-none text-[16px] text-foreground placeholder-muted-foreground ${isRtlLang ? "text-right" : "text-left"}`}
+                    className="flex-1 py-2.5 bg-transparent border-none outline-none text-[16px] text-foreground placeholder-muted-foreground text-start"
                     autoFocus
                     dir={inputDirection}
                   />
@@ -199,7 +198,7 @@ export const SearchBar = forwardRef<SearchBarHandle, SearchBarProps>(
                   onChange={(e) => setLocalSearchQuery(e.target.value)}
                   onFocus={handleFocus}
                   onKeyDown={handleKeyDown}
-                  className={`w-full bg-transparent border-none outline-none text-[15px] font-medium placeholder-muted-foreground text-foreground ${isRtlLang ? "text-right" : "text-left"}`}
+                  className="w-full bg-transparent border-none outline-none text-[15px] font-medium placeholder-muted-foreground text-foreground text-start"
                   dir={inputDirection}
                 />
               </div>

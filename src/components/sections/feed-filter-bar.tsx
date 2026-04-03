@@ -106,12 +106,12 @@ const FeedFilterBar = memo(function FeedFilterBar({ onCategoryChange }: { onCate
               initial={{ opacity: 0, x: direction === 'rtl' ? 10 : -10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: direction === 'rtl' ? 10 : -10 }}
-              className={`absolute ${direction === 'rtl' ? 'right-0' : 'left-0'} top-0 bottom-0 flex items-center z-20`}
+              className="absolute start-0 top-0 bottom-0 flex items-center z-20"
             >
               <div className={`h-full w-20 bg-gradient-to-${direction === 'rtl' ? 'l' : 'r'} from-background via-background/80 to-transparent pointer-events-none`} />
               <button
                 onClick={() => scroll(direction === 'rtl' ? 'right' : 'left')}
-                className={`absolute ${direction === 'rtl' ? 'right-0' : 'left-0'} p-2 hover:bg-muted rounded-full transition-all flex items-center justify-center bg-background shadow-md active:scale-90 border border-border`}
+                className="absolute start-0 p-2 hover:bg-muted rounded-full transition-all flex items-center justify-center bg-background shadow-md active:scale-90 border border-border"
                 aria-label={t('all')}
               >
                 <StartArrow className="w-5 h-5 text-foreground" />
@@ -148,12 +148,12 @@ const FeedFilterBar = memo(function FeedFilterBar({ onCategoryChange }: { onCate
               initial={{ opacity: 0, x: direction === 'rtl' ? -10 : 10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: direction === 'rtl' ? -10 : 10 }}
-              className={`absolute ${direction === 'rtl' ? 'left-0' : 'right-0'} top-0 bottom-0 flex items-center z-20`}
+              className="absolute end-0 top-0 bottom-0 flex items-center z-20"
             >
               <div className={`h-full w-20 bg-gradient-to-${direction === 'rtl' ? 'r' : 'l'} from-background via-background/80 to-transparent pointer-events-none`} />
               <button
                 onClick={() => scroll(direction === 'rtl' ? 'left' : 'right')}
-                className={`absolute ${direction === 'rtl' ? 'left-0' : 'right-0'} p-2 hover:bg-muted rounded-full transition-all flex items-center justify-center bg-background shadow-md active:scale-90 border border-border`}
+                className="absolute end-0 p-2 hover:bg-muted rounded-full transition-all flex items-center justify-center bg-background shadow-md active:scale-90 border border-border"
                 aria-label={t('all')}
               >
                 <EndArrow className="w-5 h-5 text-foreground" />

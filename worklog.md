@@ -944,3 +944,27 @@ Stage Summary:
 - All 12 tested routes return 200/307 successfully
 - Lint passes clean
 - Remaining `language === 'ar'` checks (~25 instances) are for i18n text selection, not layout direction — they work correctly with the `dir={direction}` on parent elements
+---
+Task ID: 3
+Agent: Main Agent
+Task: Fix UI direction for header, category/chips bar, and sidebar
+
+Work Log:
+- Ran thorough audit of 18 files across masthead, feed-filter-bar, sidebar, and related components
+- Found 13 direction issues across 8 files
+
+Files Modified:
+1. `src/components/sections/feed-filter-bar.tsx` — 4 fixes: start-side fade/button `right-0`/`left-0` → `start-0`, end-side fade/button → `end-0`
+2. `src/components/auth/user-menu.tsx` — 4 fixes: incognito badge `-right-1` → `-end-1` (2 instances), toggle `ml-auto` → `ms-auto`, toggle knob `translate-x-*` → `inset-inline-start-*`
+3. `src/components/sections/masthead/SearchBar.tsx` — 2 fixes: removed redundant `isRtlLang ? "text-right" : "text-left"` conditionals → `text-start`, cleaned up unused `isRtlLang` destructure
+4. `src/components/sections/sidebar/SidebarItem.tsx` — 1 fix: active indicator `right-0 rounded-r-none`/`left-0 rounded-l-none` → `start-0 rounded-s-full rounded-e-full`, removed unused `isRTL` prop
+5. `src/components/sections/sidebar/SidebarFooter.tsx` — 1 fix: `PanelLeftOpen/Close` → direction-aware `PanelRightOpen/Close` for RTL
+6. `src/components/sections/sidebar-guide.tsx` — removed `isRTL` prop from SidebarItem calls (no longer needed)
+7. `src/components/ui/incognito-banner.tsx` — 1 fix: `ml-2` → `ms-2`
+
+Stage Summary:
+- 13 issues fixed across header, category bar, sidebar, and related components
+- All physical positioning replaced with logical CSS properties
+- Toggle switch knob now uses `inset-inline-start` for correct RTL behavior
+- Sidebar icons now direction-aware (PanelLeft → PanelRight in RTL)
+- Lint passes clean, dev server compiles, GET / returns 200

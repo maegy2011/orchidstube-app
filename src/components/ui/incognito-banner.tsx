@@ -35,7 +35,7 @@ export function IncognitoBanner() {
             </p>
             <button
               onClick={() => setIncognito(false)}
-              className="ml-2 p-0.5 rounded-full hover:bg-amber-500/20 transition-colors"
+              className="ms-2 p-0.5 rounded-full hover:bg-amber-500/20 transition-colors"
               aria-label={t("incognitoTurnOff")}
             >
               <X size={12} className="text-amber-600 dark:text-amber-400" />
