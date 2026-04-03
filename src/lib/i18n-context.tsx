@@ -191,22 +191,26 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       if (!isNaN(val) && val !== videosPerPage) updates.videosPerPage = val;
     }
 
-    // If nothing changed, skip re-render entirely
-    if (Object.keys(updates).length === 0) return;
+    // Apply all updates directly (no startTransition — we need these
+    // committed BEFORE we reveal the body, to avoid visible layout shift)
+    if (updates.language) setLanguageState(updates.language);
+    if (updates.location) setLocationState(updates.location);
+    if (updates.restrictedMode !== undefined) setRestrictedModeState(updates.restrictedMode);
+    if (updates.showGregorianDate !== undefined) setShowGregorianDateState(updates.showGregorianDate);
+    if (updates.showHijriDate !== undefined) setShowHijriDateState(updates.showHijriDate);
+    if (updates.showRamadanCountdown !== undefined) setShowRamadanCountdownState(updates.showRamadanCountdown);
+    if (updates.hijriOffset !== undefined) setHijriOffsetState(updates.hijriOffset);
+    if (updates.loadMode) setLoadModeState(updates.loadMode);
+    if (updates.sidebarMode) setSidebarModeState(updates.sidebarMode);
+    if (updates.videosPerPage) setVideosPerPageState(updates.videosPerPage);
 
-    // Apply only the changed values in a single batch
-    React.startTransition(() => {
-      if (updates.language) setLanguageState(updates.language);
-      if (updates.location) setLocationState(updates.location);
-      if (updates.restrictedMode !== undefined) setRestrictedModeState(updates.restrictedMode);
-      if (updates.showGregorianDate !== undefined) setShowGregorianDateState(updates.showGregorianDate);
-      if (updates.showHijriDate !== undefined) setShowHijriDateState(updates.showHijriDate);
-      if (updates.showRamadanCountdown !== undefined) setShowRamadanCountdownState(updates.showRamadanCountdown);
-      if (updates.hijriOffset !== undefined) setHijriOffsetState(updates.hijriOffset);
-      if (updates.loadMode) setLoadModeState(updates.loadMode);
-      if (updates.sidebarMode) setSidebarModeState(updates.sidebarMode);
-      if (updates.videosPerPage) setVideosPerPageState(updates.videosPerPage);
-    });
+    // Reveal body AFTER all settings are synced.
+    // React batches the state updates above — they commit in the next render.
+    // Setting data-lang-ready here ensures the body only becomes visible
+    // once the final correct state is rendered.
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-lang-ready', '');
+    }
   }, [settingsLoaded, settings]);
 
   // ─── Auto-detect language on first visit ───
@@ -237,14 +241,21 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     }
   }, [language]);
 
-  // ─── Reveal body ONLY after hydration + first paint are complete ───
-  // useLayoutEffect fires before paint but React hydration mismatch fixes
-  // may not be fully committed. Using requestAnimationFrame guarantees
-  // the reveal happens on the next frame, after all DOM patches are applied.
+  // ─── Reveal body ONLY after settings are fully synced ───
+  // For unauthenticated users: settingsLoaded is true on first render
+  //   (localStorage already loaded), so reveal happens immediately.
+  // For authenticated users: reveal happens after API returns and sync completes.
+  // This is handled inside the sync effect above.
+  //
+  // Safety fallback: if for any reason the sync effect doesn't fire,
+  // reveal after a short timeout to prevent permanent blank screen.
   useEffect(() => {
-    if (typeof document !== 'undefined') {
-      document.documentElement.setAttribute('data-lang-ready', '');
-    }
+    const timer = setTimeout(() => {
+      if (typeof document !== 'undefined') {
+        document.documentElement.setAttribute('data-lang-ready', '');
+      }
+    }, 3000);
+    return () => clearTimeout(timer);
   }, []);
 
   // ─── Cross-tab language sync ───

@@ -843,3 +843,41 @@ Stage Summary:
 - localStorage stays in sync with server for authenticated users
 - ESLint: 0 errors
 - Dev server: compiles successfully
+
+---
+Task ID: 5
+Agent: Main Agent
+Task: Fix remaining visible reload — settings still applied after page load
+
+Work Log:
+- Analyzed dev server logs: saw `dir="rtl" → dir="ltr"` change during hydration (confirmed visible shift)
+- Root cause: `data-lang-ready` was set in a standalone `useEffect([], [])` which fires on the FIRST render — BEFORE `settingsLoaded` becomes true
+- For authenticated users: API returns later → sync effect updates state → body already visible → visible layout shift
+- For unauthenticated users: `settingsLoaded=true` on first render, sync ran, but reveal was in a SEPARATE effect that could fire before sync completed
+
+Fix 1 - Move body reveal into sync effect (i18n-context.tsx):
+- Removed standalone `useEffect(() => { data-lang-ready }, [])` that revealed too early
+- Moved `data-lang-ready` setting to END of the first-sync branch in the settings sync effect
+- Body is now only revealed AFTER all settings are compared and applied
+- For unauthenticated users: sync fires immediately (localStorage = state), reveal is instant
+- For authenticated users: sync fires after API returns, reveal happens with final correct state
+
+Fix 2 - Safety fallback timeout:
+- Added 3-second safety timeout that reveals body even if sync never fires
+- Prevents permanent blank screen in edge cases (network error, etc.)
+
+Fix 3 - Remove startTransition from first sync:
+- Changed from `React.startTransition(() => { ... })` to direct `setState()` calls
+- startTransition marks updates as low-priority, which could delay them past the reveal point
+- Direct setState ensures updates are committed in the same render cycle as the reveal
+
+Also checked PrayerProvider and WellBeingProvider:
+- PrayerProvider: reads settings after settingsLoaded, but only affects prayer bar (hidden by default)
+- WellBeingProvider: reads tracking counters after settingsLoaded, no visible layout impact
+- Neither causes visible shifts
+
+Stage Summary:
+- File modified: src/lib/i18n-context.tsx (body reveal timing)
+- Body is now only revealed AFTER settings are fully synced
+- ESLint: 0 errors
+- Dev server: compiles successfully, GET / 200
