@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Check, X } from 'lucide-react';
+import { useI18n } from '@/lib/i18n-context';
 
 interface NoteEditDialogProps {
   editContent: string;
@@ -30,6 +31,8 @@ export default function NoteEditDialog({
   cancelEditing,
   t,
 }: NoteEditDialogProps) {
+  const { direction } = useI18n();
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-2">
@@ -42,7 +45,7 @@ export default function NoteEditDialog({
           value={editContent}
           onChange={(e) => setEditContent(e.target.value)}
           className="w-full p-4 bg-gray-50 border-none rounded-2xl resize-none h-32 text-sm focus:ring-2 focus:ring-red-500/10 transition-all font-medium leading-relaxed mb-4"
-          dir="rtl"
+          dir={direction}
           autoFocus
         />
         <div className="mb-4">
@@ -52,7 +55,7 @@ export default function NoteEditDialog({
             onChange={(e) => setEditHashtags(e.target.value)}
             placeholder={t("hashtags_placeholder")}
             className="w-full px-4 py-3 bg-gray-50 border-none rounded-2xl text-sm font-medium focus:ring-2 focus:ring-red-500/10"
-            dir="rtl"
+            dir={direction}
           />
         </div>
       <div className="grid grid-cols-2 gap-3">

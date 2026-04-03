@@ -15,7 +15,7 @@ export default function FeedbackPage() {
   const [feedback, setFeedback] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const { t } = useI18n();
+  const { t, direction } = useI18n();
   const mainPaddingTop = useTopPadding();
   const timerRef = useRef<NodeJS.Timeout>();
 
@@ -36,13 +36,13 @@ export default function FeedbackPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground" dir="rtl">
+    <div className="min-h-screen bg-background text-foreground" dir={direction}>
       <Masthead 
         onMenuClick={() => setSidebarOpen(!sidebarOpen)} 
       />
       <SidebarGuide isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
-      <main className={`mr-0 lg:mr-[240px] ${mainPaddingTop} flex flex-col min-h-screen transition-all duration-300`}>
+      <main className={`ms-0 lg:ms-[240px] ${mainPaddingTop} flex flex-col min-h-screen transition-all duration-300`}>
         <div className="bg-red-600 p-4 text-white">
           <div className="max-w-4xl mx-auto flex gap-2 bg-black/10 p-1 rounded-xl">
             <Link 
@@ -119,7 +119,7 @@ export default function FeedbackPage() {
                         <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       ) : (
                         <>
-                          <Send className="w-5 h-5 rotate-180" />
+                          <Send className={`w-5 h-5 ${direction === 'rtl' ? 'rotate-180' : ''}`} />
                           إرسال الآن
                         </>
                       )}

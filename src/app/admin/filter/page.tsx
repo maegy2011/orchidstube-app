@@ -81,7 +81,7 @@ const CATEGORY_LABELS: Record<AllowedCategory, string> = {
 };
 
 export default function ContentFilterAdminPage() {
-  const { showRamadanCountdown } = useI18n();
+  const { showRamadanCountdown, direction } = useI18n();
   const mainPaddingTop = useTopPadding();
   const headerTop = useHeaderTop();
   const [config, setConfig] = useState<ContentFilterConfig | null>(null);
@@ -346,7 +346,7 @@ export default function ContentFilterAdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-red-500/30 pb-20 md:pb-0" dir="rtl">
+    <div className="min-h-screen bg-background text-foreground selection:bg-red-500/30 pb-20 md:pb-0" dir={direction}>
       <Toaster position="top-center" />
       
         {/* Header */}
@@ -354,7 +354,7 @@ export default function ContentFilterAdminPage() {
           <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/" className="p-2 hover:bg-muted rounded-full transition-colors md:hidden">
-              <ArrowRight className="w-6 h-6" />
+              <ArrowRight className="w-6 h-6 ltr:rotate-180" />
             </Link>
             <div className="bg-red-600/10 p-2 rounded-xl">
               <Shield className="w-6 h-6 text-red-600" />
@@ -457,11 +457,11 @@ export default function ContentFilterAdminPage() {
             </TabsList>
 
             {(activeTab === 'whitelist' || activeTab === 'keywords') && (
-              <div className="mr-4 relative hidden md:block w-64">
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <div className="ms-4 relative hidden md:block w-64">
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input 
                   placeholder="بحث سريع..." 
-                  className="bg-muted border-border pr-9 focus:ring-red-600 h-9"
+                  className="bg-muted border-border ps-9 focus:ring-red-600 h-9"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -658,7 +658,7 @@ export default function ContentFilterAdminPage() {
                 </div>
 
                 <div className="md:hidden relative">
-                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input 
                     placeholder="بحث في القائمة..." 
                     className="bg-muted border-border pr-9 focus:ring-red-600"
@@ -737,14 +737,14 @@ export default function ContentFilterAdminPage() {
                       disabled={saving || !newKeyword.trim()}
                       className="bg-red-600 hover:bg-red-700 h-11 px-6 text-white"
                     >
-                      <Plus className="w-5 h-5 md:ml-2" />
+                      <Plus className="w-5 h-5 md:ms-2" />
                       <span className="hidden md:inline">إضافة الكلمة</span>
                     </Button>
                   </div>
                 </Card>
 
                 <div className="md:hidden relative">
-                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input 
                     placeholder="بحث في الكلمات..." 
                     className="bg-muted border-border pr-9 focus:ring-red-600"

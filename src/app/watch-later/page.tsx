@@ -25,7 +25,7 @@ export default function WatchLaterPage() {
   const { getAllWatchLater, removeFromWatchLater, isLoaded } = useWatchLater();
   const [searchQuery, setSearchQuery] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { t, language } = useI18n();
+  const { t, language, direction } = useI18n();
   const mainPaddingTop = useTopPadding();
   const { marginClass } = useSidebarLayout(sidebarOpen);
 
@@ -60,7 +60,7 @@ export default function WatchLaterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+    <div className="min-h-screen bg-background text-foreground" dir={direction}>
       <Masthead onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       <SidebarGuide isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
@@ -85,10 +85,9 @@ export default function WatchLaterPage() {
               </div>
 
               <div className="relative group w-full md:w-96">
-                <Search className={cn(
-                  "absolute top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-blue-600 transition-colors",
-                  language === 'ar' ? "right-4" : "left-4"
-                )} />
+                <Search className={
+                  "absolute top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-blue-600 transition-colors start-4"
+                } />
                 <input
                   type="text"
                   value={searchQuery}
@@ -96,7 +95,7 @@ export default function WatchLaterPage() {
                   placeholder={t('search') + "..."}
                   className={cn(
                     "w-full py-3.5 bg-card border border-border rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all shadow-sm",
-                    language === 'ar' ? "pr-11 pl-10" : "pl-11 pr-10"
+                    "ps-11 pe-10"
                   )}
                 />
                 <AnimatePresence>
@@ -106,10 +105,9 @@ export default function WatchLaterPage() {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.8 }}
                       onClick={() => setSearchQuery('')}
-                      className={cn(
-                        "absolute top-1/2 -translate-y-1/2 p-2 hover:bg-muted rounded-xl text-muted-foreground hover:text-foreground transition-colors",
-                        language === 'ar' ? "left-3" : "right-3"
-                      )}
+                      className={
+                        "absolute top-1/2 -translate-y-1/2 p-2 hover:bg-muted rounded-xl text-muted-foreground hover:text-foreground transition-colors end-3"
+                      }
                     >
                       <X size={14} />
                     </motion.button>
@@ -144,7 +142,7 @@ export default function WatchLaterPage() {
                   className="inline-flex items-center gap-3 px-10 py-4 bg-blue-600 text-white rounded-[1.25rem] font-bold hover:bg-blue-700 active:scale-95 transition-all shadow-xl shadow-blue-600/20 group"
                 >
                   {t("discoverVideos")}
-                  <ArrowRight size={20} className={cn("transition-transform", language === 'ar' ? "rotate-180 group-hover:-translate-x-1" : "group-hover:translate-x-1")} />
+                  <ArrowRight size={20} className={cn("transition-transform", direction === 'rtl' ? "rotate-180 group-hover:-translate-x-1" : "group-hover:translate-x-1")} />
                 </Link>
               </motion.div>
             ) : filteredWatchLater.length === 0 ? (
@@ -185,12 +183,12 @@ export default function WatchLaterPage() {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-500 flex items-center justify-center">
                           <div className="w-14 h-14 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-2xl scale-90 group-hover/card:scale-100 transition-transform duration-500 shadow-blue-600/40">
-                            <Play size={28} className={cn("fill-current", language === 'ar' ? "mr-[-2px]" : "ml-1")} />
+                            <Play size={28} className="fill-current ms-[-2px]" />
                           </div>
                         </div>
                         <div className={cn(
                           "absolute bottom-3 px-2 py-1 bg-black/70 backdrop-blur-md text-white text-[10px] font-bold rounded-lg flex items-center gap-1.5",
-                          language === 'ar' ? "left-3" : "right-3"
+                          "end-3"
                         )}>
                           <Clock size={10} />
                           {item.duration}

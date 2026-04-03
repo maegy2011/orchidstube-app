@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/lib/i18n-context';
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -82,6 +83,7 @@ const shareOptions = [
 export default function ShareModal({ isOpen, onClose, videoId, videoTitle, thumbnail }: ShareModalProps) {
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<'share' | 'embed'>('share');
+  const { direction } = useI18n();
   
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
   const shortUrl = `${baseUrl}/v/${videoId}`;
@@ -141,7 +143,7 @@ export default function ShareModal({ isOpen, onClose, videoId, videoTitle, thumb
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
           className="bg-white dark:bg-gray-900 w-full sm:w-[480px] sm:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
-          dir="rtl"
+          dir={direction}
         >
           <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 px-6 py-4 flex items-center justify-between z-10">
             <h2 className="text-xl font-black text-gray-900 dark:text-white">مشاركة الفيديو</h2>

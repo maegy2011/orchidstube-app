@@ -25,7 +25,7 @@ export default function SupportPage() {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<NodeJS.Timeout>();
-  const { t, language, showRamadanCountdown } = useI18n();
+  const { t, language, direction, showRamadanCountdown } = useI18n();
   const [daysUntilRamadan, setDaysUntilRamadan] = useState<number | null>(null);
 
   useEffect(() => {
@@ -93,13 +93,13 @@ export default function SupportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col" dir="rtl">
+    <div className="min-h-screen bg-background flex flex-col" dir={direction}>
       <Masthead 
         onMenuClick={() => setSidebarOpen(!sidebarOpen)} 
       />
       <SidebarGuide isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
-      <main className={`flex-1 ${language === 'ar' ? 'mr-0 lg:mr-[240px]' : 'ml-0 lg:ml-[240px]'} pt-[64px] flex flex-col h-[calc(100vh-64px)] overflow-hidden transition-all duration-300`}>
+      <main className={`flex-1 ms-0 lg:ms-[240px] pt-[64px] flex flex-col h-[calc(100vh-64px)] overflow-hidden transition-all duration-300`}>
         <div className={`flex-1 max-w-4xl w-full mx-auto flex flex-col bg-card shadow-xl lg:my-6 lg:rounded-3xl overflow-hidden border border-border ${mainPaddingTop}`}>
           <div className="bg-red-600 p-4 text-white flex flex-col gap-4">
             <div className="flex items-center justify-between">
@@ -157,11 +157,11 @@ export default function SupportPage() {
                   <div className={`
                     max-w-[80%] p-4 rounded-2xl shadow-sm text-sm md:text-base leading-relaxed
                     ${msg.sender === 'user' 
-                      ? 'bg-red-600 text-white rounded-br-none' 
-                      : 'bg-muted text-foreground rounded-bl-none border border-border'}
+                      ? 'bg-red-600 text-white rounded-bs-none' 
+                      : 'bg-muted text-foreground rounded-be-none border border-border'}
                   `}>
                     {msg.text}
-                    <div className={`text-[10px] mt-1 opacity-60 ${msg.sender === 'user' ? 'text-left text-white' : 'text-right text-muted-foreground'}`}>
+                    <div className={`text-[10px] mt-1 opacity-60 ${msg.sender === 'user' ? 'text-start text-white' : 'text-end text-muted-foreground'}`}>
                       {mounted && msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </div>
                   </div>
@@ -180,7 +180,7 @@ export default function SupportPage() {
                   animate={{ opacity: 1 }}
                   className="flex justify-end items-center gap-2"
                 >
-                  <div className="bg-muted p-4 rounded-2xl border border-border rounded-bl-none shadow-sm flex gap-1">
+                  <div className="bg-muted p-4 rounded-2xl border border-border rounded-be-none shadow-sm flex gap-1">
                     <span className="w-1.5 h-1.5 bg-muted-foreground/30 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                     <span className="w-1.5 h-1.5 bg-muted-foreground/30 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                     <span className="w-1.5 h-1.5 bg-muted-foreground/30 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
@@ -217,7 +217,7 @@ export default function SupportPage() {
                   ${!message.trim() ? 'bg-muted-foreground/30 text-muted-foreground cursor-not-allowed' : 'bg-red-600 text-white shadow-lg shadow-red-600/30 hover:bg-red-700 active:scale-95'}
                 `}
               >
-                <Send className="w-5 h-5 rotate-180" />
+                <Send className={`w-5 h-5 ${direction === 'rtl' ? 'rotate-180' : ''}`} />
               </button>
             </div>
           </form>

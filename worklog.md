@@ -881,3 +881,29 @@ Stage Summary:
 - Body is now only revealed AFTER settings are fully synced
 - ESLint: 0 errors
 - Dev server: compiles successfully, GET / 200
+---
+Task ID: 1
+Agent: Main Agent
+Task: Fix UI direction to follow language direction
+
+Work Log:
+- Explored codebase to understand current RTL/LTR direction handling
+- Found 6 components with hardcoded `dir="rtl"` that wouldn't adapt to LTR languages
+- Found watch-later page using manual `language === 'ar'` check instead of `direction` from useI18n
+- Found multiple physical CSS properties (mr, ml, pr, pl, left, right, text-left, text-right, rounded-bl-none, rounded-br-none) that should use logical properties
+- Found Send icon with hardcoded rotate-180 for RTL only
+
+Files Modified:
+1. `src/app/notes/components/NoteEditDialog.tsx` - Added useI18n(), replaced `dir="rtl"` with `dir={direction}`
+2. `src/app/support/page.tsx` - Destructured `direction` from useI18n, replaced `dir="rtl"` with `dir={direction}`, replaced physical margin with `ms-0 lg:ms-[240px]`, fixed chat bubble rounded corners (`rounded-bs-none`/`rounded-be-none`), fixed text alignment (`text-start`/`text-end`), fixed Send icon rotation to be direction-aware
+3. `src/app/feedback/page.tsx` - Destructured `direction` from useI18n, replaced `dir="rtl"` with `dir={direction}`, replaced `mr-0 lg:mr-[240px]` with `ms-0 lg:ms-[240px]`, fixed Send icon rotation to be direction-aware
+4. `src/app/admin/filter/page.tsx` - Destructured `direction` from useI18n, replaced `dir="rtl"` with `dir={direction}`, fixed back button ArrowRight with `ltr:rotate-180`, replaced physical properties with logical ones (`ms-4`, `start-3`, `ps-9`, `md:ms-2`)
+5. `src/app/watch-later/page.tsx` - Destructured `direction` from useI18n, replaced `dir={language === 'ar' ? 'rtl' : 'ltr'}` with `dir={direction}`, replaced all physical CSS with logical properties (`start-4`, `end-3`, `ps-11`, `pe-10`, `ms-[-2px]`), fixed ArrowRight icon direction check
+6. `src/components/ui/share-modal.tsx` - Added useI18n() import, replaced `dir="rtl"` with `dir={direction}`
+
+Stage Summary:
+- All 6 hardcoded `dir="rtl"` instances replaced with dynamic `dir={direction}` from useI18n
+- Physical CSS properties replaced with logical properties (ms, me, ps, pe, start, end, text-start, text-end, rounded-bs, rounded-be)
+- Direction-specific icon rotations made conditional
+- Lint passes clean, dev server compiles successfully, GET / returns 200
+- Toaster position left as-is (bottom-left is conventional for both LTR and RTL)
