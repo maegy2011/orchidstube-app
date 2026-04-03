@@ -20,6 +20,8 @@ export function AuthLayout({ children, title, description }: AuthLayoutProps) {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const isSignIn = pathname === "/auth/signin";
+  const isAuthPage = pathname === "/auth/signin" || pathname === "/auth/signup";
+  const isResetFlow = pathname === "/auth/forgot-password" || pathname === "/auth/reset-password";
   const { t } = useI18n();
 
   useEffect(() => {
@@ -61,35 +63,46 @@ export function AuthLayout({ children, title, description }: AuthLayoutProps) {
           </Link>
         </div>
 
-        {/* Right: Auth Toggle */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center bg-muted/60 rounded-full p-1 gap-0.5">
-            <Link
-              href="/auth/signin"
-              className={cn(
-                "flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200",
-                isSignIn
-                  ? "bg-background shadow-sm text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <LogIn size={14} />
-              <span className="hidden sm:inline">{t("signIn")}</span>
-            </Link>
-            <Link
-              href="/auth/signup"
-              className={cn(
-                "flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200",
-                !isSignIn
-                  ? "bg-background shadow-sm text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <UserPlus size={14} />
-              <span className="hidden sm:inline">{t("signUp")}</span>
-            </Link>
+        {/* Right: Auth Toggle (hidden on forgot/reset pages) */}
+        {isAuthPage && (
+          <div className="flex items-center gap-2">
+            <div className="flex items-center bg-muted/60 rounded-full p-1 gap-0.5">
+              <Link
+                href="/auth/signin"
+                className={cn(
+                  "flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200",
+                  isSignIn
+                    ? "bg-background shadow-sm text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <LogIn size={14} />
+                <span className="hidden sm:inline">{t("signIn")}</span>
+              </Link>
+              <Link
+                href="/auth/signup"
+                className={cn(
+                  "flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200",
+                  !isSignIn
+                    ? "bg-background shadow-sm text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <UserPlus size={14} />
+                <span className="hidden sm:inline">{t("signUp")}</span>
+              </Link>
+            </div>
           </div>
-        </div>
+        )}
+        {isResetFlow && (
+          <Link
+            href="/auth/signin"
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium text-muted-foreground hover:text-foreground transition-all duration-200"
+          >
+            <LogIn size={14} />
+            <span className="hidden sm:inline">{t("signIn")}</span>
+          </Link>
+        )}
       </header>
 
       {/* ─── Main Content Area ─── */}

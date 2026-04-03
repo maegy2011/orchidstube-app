@@ -96,7 +96,7 @@ export default function VideoGrid({
 
   const fetchVideos = useCallback(async (page: number, append: boolean = false) => {
     // Check cache first if it's the first page or we are not appending
-    const cacheKey = `${searchQuery}-${language}-${location}-${restrictedMode}`;
+    const cacheKey = `${searchQuery}-${language}-${location}-${restrictedMode}-${videosPerPage}`;
     if (!append && page === 1 && searchCache[cacheKey] && (Date.now() - searchCache[cacheKey].timestamp < CACHE_TTL)) {
       setVideos(searchCache[cacheKey].videos);
       pageTokens.current = { ...searchCache[cacheKey].tokens };
@@ -186,9 +186,9 @@ export default function VideoGrid({
     } finally {
       if (!controller.signal.aborted) setIsLoading(false);
     }
-  }, [searchQuery, language, location, restrictedMode, onTotalPagesChange, t]);
+  }, [searchQuery, language, location, restrictedMode, onTotalPagesChange, t, videosPerPage]);
 
-  // Reset tokens and fetch page 1 when search query or location changes
+  // Reset tokens and fetch page 1 when search query, location, or videosPerPage changes
   useEffect(() => {
     pageTokens.current = { 1: null };
     setVideos([]);
@@ -196,6 +196,13 @@ export default function VideoGrid({
     setHasMore(true);
     setError(null);
     setIsInitialLoad(true);
+    // Invalidate cache for old videosPerPage values
+    const prefix = `${searchQuery}-${language}-${location}-${restrictedMode}-`;
+    Object.keys(searchCache).forEach(key => {
+      if (key.startsWith(prefix) && key !== `${prefix}${videosPerPage}`) {
+        delete searchCache[key];
+      }
+    });
     fetchVideos(1, false);
   }, [searchQuery, location, restrictedMode, fetchVideos]);
 

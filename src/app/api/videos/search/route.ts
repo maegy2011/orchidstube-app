@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
     let hasMore = true;
     const filteredVideos: any[] = [];
     let fetchCount = 0;
-    const MAX_FETCH_ATTEMPTS = 4; // Capped to prevent excessive external requests
+    const MAX_FETCH_ATTEMPTS = 6; // Capped to prevent excessive external requests
 
     // Improved fetching logic: if we don't have enough videos after filtering, fetch more aggressively
     while (filteredVideos.length < limit && hasMore && fetchCount < MAX_FETCH_ATTEMPTS) {
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
       
       if (currentToken) {
         // Fetch more via token
-        const result = await searchVideosWithContinuation(query, currentToken, region, language);
+        const result = await searchVideosWithContinuation(query, currentToken, region, language, limit);
         batchResults.push(...result.videos);
         currentToken = result.continuationToken;
         hasMore = result.hasMore;
@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
         // Initial multi-query search
         for (const sQ of searchQueries) {
           try {
-            const result = await searchVideosWithContinuation(sQ, undefined, region, language);
+            const result = await searchVideosWithContinuation(sQ, undefined, region, language, limit);
             batchResults.push(...result.videos);
             if (sQ === query) {
               currentToken = result.continuationToken;
@@ -106,16 +106,33 @@ export async function GET(request: NextRequest) {
             console.error(`Search query "${sQ}" failed:`, err);
           }
         }
-      } else if (hasMore && currentToken === null && fetchCount > 0) {
-        // If we still need more but lost the token, try variations of the query to find more content
-        const variations = enhanceQueryForAllowedContent(query, config.allowedCategories);
-        const randomVariation = variations[Math.floor(Math.random() * variations.length)];
-        try {
-          const result = await searchVideosWithContinuation(randomVariation, undefined, region, language);
-          batchResults.push(...result.videos);
-          currentToken = result.continuationToken;
-          hasMore = result.hasMore;
-        } catch (err) {
+      } else if (fetchCount > 0 && (currentToken === null || !hasMore)) {
+        // No continuation token — use query variations to find more unique videos
+        const allVariations = enhanceQueryForAllowedContent(query, config.allowedCategories);
+        // Shuffle and pick variations we haven't used yet
+        const usedVariations = new Set([query]);
+        if (token === undefined || token === null) {
+          // Initial load already used the main query + category terms
+          // For pagination, use completely different search terms
+          const pageVariations = [
+            ...allVariations.filter(v => !usedVariations.has(v)),
+            `${query} part ${page}`,
+            `${query} ${page}`,
+          ];
+          const variation = pageVariations[Math.floor(Math.random() * pageVariations.length)];
+          try {
+            const result = await searchVideosWithContinuation(variation, undefined, region, language, limit);
+            batchResults.push(...result.videos);
+            // Fallback providers never return real continuation tokens, so keep trying
+            if (result.videos.length > 0) {
+              hasMore = true; // Signal that more might be available via variations
+            } else {
+              hasMore = false;
+            }
+          } catch (err) {
+            hasMore = false;
+          }
+        } else {
           hasMore = false;
         }
       } else {
@@ -149,12 +166,20 @@ export async function GET(request: NextRequest) {
       if (!currentToken && fetchCount > 0 && batchResults.length === 0) hasMore = false;
     }
 
+    // Determine if there are truly more results
+    // Even without a continuation token, we can signal hasMore if we got enough videos
+    // and there might be more via query variations
+    const gotEnough = filteredVideos.length >= limit;
+    const hasContinuation = !!currentToken;
+    const canTryMore = !gotEnough && fetchCount < MAX_FETCH_ATTEMPTS;
+
     return NextResponse.json({ 
       videos: filteredVideos.slice(0, limit), 
       continuationToken: currentToken,
-      hasMore: hasMore || filteredVideos.length > limit,
+      hasMore: hasContinuation || canTryMore || (gotEnough && filteredVideos.length >= limit),
       page,
       query: query,
+      totalFetched: filteredVideos.length,
     });
   } catch (error) {
     console.error('Search error:', error);

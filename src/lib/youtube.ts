@@ -41,15 +41,16 @@ export async function searchVideos(query: string, limit: number = 30, lang?: str
   return result.videos.slice(0, limit);
 }
 
-export async function searchVideosWithContinuation(query: string, token?: string, region?: string, lang?: string) {
+export async function searchVideosWithContinuation(query: string, token?: string, region?: string, lang?: string, limit?: number) {
   // Check if we should skip youtubei.js due to known issues
   const SKIP_YOUTUBEI_JS = true; // Temporarily disable due to YouTube API changes
 
   if (SKIP_YOUTUBEI_JS) {
-    const videos = await fallbackSearch(query);
+    const videos = await fallbackSearch(query, limit || 20);
     return {
       videos,
-      hasMore: videos.length >= 10,
+      // Signal hasMore if we got a decent number — the API can try variations for more
+      hasMore: videos.length >= 3,
       continuationToken: null
     };
   }
@@ -146,12 +147,10 @@ export async function searchVideosWithContinuation(query: string, token?: string
   }
 
   // Fallback to existing logic if youtubei.js fails or not initialized
-  const videos = await fallbackSearch(query);
-  // If we have videos from fallback, we can still allow some pagination by returning hasMore: true
-  // although we don't have a real token. The API will handle variations if no token is provided.
+  const videos = await fallbackSearch(query, limit || 20);
   return { 
     videos, 
-    hasMore: videos.length >= 10, 
+    hasMore: videos.length >= 3, 
     continuationToken: null 
   };
 }

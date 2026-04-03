@@ -595,3 +595,69 @@ Stage Summary:
 - Fix: `.zscripts/dev.sh` now handles `.config` file/directory conflict automatically
 - Server starts successfully and remains stable
 - All endpoints return 200 through Caddy proxy
+
+---
+Task ID: 2-a
+Agent: Main Agent
+Task: Enhance sign-in/up & forgot password (no email server at dev stage)
+
+Work Log:
+- Explored entire auth system: NextAuth v4, Drizzle ORM, JWT strategy, 4 providers
+- Created POST /api/auth/forgot-password - generates verification token, returns reset URL in dev mode
+- Created POST /api/auth/reset-password - validates token, updates password, deletes used token
+- Fixed critical module resolution bug: @/lib/db was resolving to Prisma db.ts instead of Drizzle db/index.ts. Removed legacy Prisma db.ts (not used by auth code).
+- Updated sign-in page: "Forgot password?" button now navigates to /auth/forgot-password (was showing toast "coming soon")
+- Created /auth/forgot-password page with:
+  - Email input with validation
+  - Animated form → success state transition
+  - Dev mode: shows reset link directly in UI with copy button and clickable link
+  - Back to sign-in navigation
+- Created /auth/reset-password page with:
+  - Token validation from URL params (shows error state if invalid/expired)
+  - New password + confirm password fields with show/hide toggles
+  - Password strength indicator (reused from signup)
+  - Animated success state with "Go to Sign In" button
+  - Error state with "Request New Link" option
+- Updated auth-layout.tsx: Sign In/Sign Up toggle hidden on forgot/reset pages, shows simple Sign In link instead
+- Added 23 new i18n keys across all 10 language sections (en, ar, fr, es, zh, ja, it, de, pt, tr)
+- ESLint: 0 errors
+- All 5 auth pages return 200: /, /auth/signin, /auth/signup, /auth/forgot-password, /auth/reset-password
+- Full end-to-end flow tested: register → forgot-password → get token → reset-password → success
+
+Stage Summary:
+- Complete forgot/reset password flow implemented (no email server needed in dev mode)
+- Dev mode shows reset link directly in UI instead of sending email
+- Production-ready token system with 1-hour expiration
+- Security: doesn't reveal whether email exists
+- Clean UI with animations matching existing auth pages
+
+---
+Task ID: 3
+Agent: Main Agent
+Task: Enhance UI of Video Loading Mode & Videos Per Page in Settings
+
+Work Log:
+- Read current LoadingModeSection.tsx (70 lines) — basic toggle + number buttons
+- Studied ThemePicker and SidebarModePicker patterns: visual preview cards, framer-motion animations, active indicators with spring physics
+- Completely rewrote LoadingModeSection.tsx (70 → 340+ lines):
+  - Added proper section header with Sparkles icon + title + description (matching ThemePicker style)
+  - Created AutoModePreview component: mini screen showing 4 video thumbnails + animated scroll arrows (chevrons bouncing down)
+  - Created ManualModePreview component: mini screen showing 4 video thumbnails + "Load More" button representation
+  - Created LoadModeCard component: visual cards with mini previews, active indicator with spring animation, hover/tap scale effects, icon + label + description
+  - Created GridPreview component: mini grid preview showing different column layouts (2-5 cols) based on video count
+  - Created VideoCountCard component: visual cards with grid preview + count badge + size label (Compact/Default/Extended/Max/Ultra)
+  - Added animated count indicator showing current selection with AnimatePresence transitions
+  - Added "Loading Behavior" sub-section label with uppercase tracking
+- Added 9 new translation keys to en.ts and ar.ts:
+  - loadModeDesc, loadModeBehavior, videosPerPageLabel
+  - videosPerPageCompact, videosPerPageDefault, videosPerPageExtended, videosPerPageMax, videosPerPageUltra
+- Other languages (fr, es, pt, de, zh, ja, it, tr) fall back to English via i18n system
+
+Stage Summary:
+- LoadingModeSection completely redesigned with visual preview cards
+- Video Loading Mode: 2 visual cards (Auto/Manual) with animated mini previews
+- Videos Per Page: 5 visual cards (6/12/18/24/30) with grid layout previews and size labels
+- Design consistent with ThemePicker and SidebarModePicker components
+- ESLint: 0 errors
+- Dev server: compiles successfully, /settings returns 200
+- Files modified: LoadingModeSection.tsx, en.ts, ar.ts

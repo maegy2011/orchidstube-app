@@ -2,6 +2,7 @@
 
 import { useState, useCallback, Suspense, useEffect } from "react";
 import { signIn, useSession } from "next-auth/react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -226,15 +227,12 @@ function SignInForm() {
             >
               {t("authPassword")}
             </Label>
-            <button
-              type="button"
+            <Link
+              href="/auth/forgot-password"
               className="text-xs text-red-600 hover:text-red-700 font-medium transition-colors duration-200 hover:underline"
-              onClick={() =>
-                toast.info(t("authPasswordResetSoon"))
-              }
             >
               {t("authForgotPassword")}
-            </button>
+            </Link>
           </div>
           <div className="relative group">
             <Lock className="absolute start-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground group-focus-within:text-red-600 transition-colors duration-200" />
