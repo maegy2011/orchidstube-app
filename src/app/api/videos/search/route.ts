@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { searchVideosWithContinuation } from '@/lib/youtube';
 import { filterContent, loadFilterConfig } from '@/lib/content-filter';
-
+import 'cheerio';
 const CATEGORY_SEARCH_TERMS: Record<string, string[]> = {
   education: ['تعليم', 'شرح', 'درس', 'كورس', 'تعلم', 'دورة تدريبية', 'محاضرات', 'محاضرة', 'ملخص'],
   quran: ['قرآن', 'تلاوة خاشعة', 'تجويد', 'سورة كاملة', 'المصحف المرتل', 'القرآن الكريم'],
