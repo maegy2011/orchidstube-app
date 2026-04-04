@@ -15,6 +15,13 @@ const nextConfig: NextConfig = {
     'node-fetch',
     'youtube-po-token-generator'
   ],
+  webpack: (config: any) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      cheerio: require.resolve('cheerio'),
+    };
+    return config;
+  },
   images: {
     remotePatterns: [
       {
