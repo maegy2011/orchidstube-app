@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
     'youtube-sr',
     'youtube-search-api',
     'youtube-search-without-api-key',
-    'yt-search',
+    'ytube-noapi',
     'jocles',
     'node-fetch',
     'youtube-po-token-generator'

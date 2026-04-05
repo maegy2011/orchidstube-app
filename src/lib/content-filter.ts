@@ -49,7 +49,10 @@ const CATEGORY_KEYWORDS: Record<AllowedCategory, string[]> = {
   nature: ['طبيعة', 'nature', 'حيوانات', 'animals', 'بيئة', 'environment', 'نباتات', 'plants', 'بحار', 'ocean', 'غابات', 'forest', 'wildlife', 'حياة برية'],
 };
 
+const IS_READ_ONLY_FS = process.env.VERCEL === '1' || process.env.AWS_LAMBDA_FUNCTION_NAME;
+
 function ensureDataDirectory(): void {
+  if (IS_READ_ONLY_FS) return;
   const dataDir = path.dirname(CONFIG_FILE_PATH);
   if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
@@ -58,6 +61,7 @@ function ensureDataDirectory(): void {
 
 export function loadFilterConfig(): ContentFilterConfig {
   try {
+    if (IS_READ_ONLY_FS) return { ...DEFAULT_CONFIG };
     ensureDataDirectory();
     if (fs.existsSync(CONFIG_FILE_PATH)) {
       const data = fs.readFileSync(CONFIG_FILE_PATH, 'utf-8');
@@ -69,11 +73,12 @@ export function loadFilterConfig(): ContentFilterConfig {
 }
 
 export function saveFilterConfig(config: ContentFilterConfig): void {
+  if (IS_READ_ONLY_FS) return; // No-op on serverless
   try {
     ensureDataDirectory();
     fs.writeFileSync(CONFIG_FILE_PATH, JSON.stringify(config, null, 2), 'utf-8');
   } catch (error) {
-    throw new Error('Failed to save filter configuration');
+    console.warn('Failed to save filter config (read-only filesystem):', error);
   }
 }
 

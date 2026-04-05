@@ -1,4 +1,3 @@
-import ytSearch from 'yt-search';
 import YouTubeSR from 'youtube-sr';
 import youtubeSearchApi from 'youtube-search-api';
 import { search as ytSearchNoApi } from 'youtube-search-without-api-key';
@@ -118,31 +117,6 @@ export async function fallbackSearch(query: string, limit: number = 30): Promise
     }
   } catch (error) {
     // youtube-search-without-api-key failed
-  }
-
-  // 4. Try yt-search
-  try {
-    const results = await ytSearch(query);
-    const videos = results.videos.slice(0, limit);
-
-    if (videos.length > 0) {
-      return videos.map((v: any) => ({
-        id: v.videoId,
-        title: v.title || 'Unknown Title',
-        description: v.description || '',
-        thumbnail: v.thumbnail || v.image || '',
-        duration: v.timestamp || '0:00',
-        views: formatViews(v.views) || '0 views',
-        uploadedAt: v.ago || '',
-        channelName: v.author?.name || 'Unknown Channel',
-        channelAvatar: getDefaultChannelAvatar(v.author?.name || 'Unknown'),
-        channelId: v.author?.url?.split('/').pop() || '',
-        isVerified: false,
-        url: v.url,
-      }));
-    }
-  } catch (error) {
-    // yt-search failed
   }
 
   return [];

@@ -35,8 +35,23 @@ export async function PUT(request: NextRequest) {
     if (auth.error) return auth.error;
     const userId = auth.user.id;
 
-    const body = await request.json();
-    const { settings } = body;
+    // Handle both JSON body (fetch) and text body (sendBeacon)
+    let settings: Record<string, string> | undefined;
+    const contentType = request.headers.get("content-type") || "";
+
+    if (contentType.includes("application/json")) {
+      const body = await request.json();
+      settings = body.settings;
+    } else {
+      // sendBeacon sends text/plain — parse manually
+      const text = await request.text();
+      try {
+        const body = JSON.parse(text);
+        settings = body.settings;
+      } catch {
+        return NextResponse.json({ error: "Invalid body" }, { status: 400 });
+      }
+    }
 
     if (!settings || typeof settings !== "object") {
       return NextResponse.json({ error: "Settings object is required" }, { status: 400 });
