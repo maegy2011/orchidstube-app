@@ -27,16 +27,9 @@ export type VideoDetail = {
 // In-memory cache for channel avatar URLs keyed by channel name
 const avatarCache = new Map<string, string>();
 
-/**
- * Fetch a real channel avatar using ytube-noapi search (same method as the homepage).
- * The homepage uses `ytubeNoApi.searchVideos()` which returns real `channelThumbnail` URLs
- * scraped from YouTube HTML. We search by channel name, grab the thumbnail from the first
- * result that has one, and cache it for subsequent requests.
- */
 async function fetchChannelAvatarFromSearch(channelName: string): Promise<string> {
   if (!channelName || channelName === 'Unknown Channel') return '';
 
-  // Check cache first
   const cached = avatarCache.get(channelName);
   if (cached) return cached;
 
@@ -44,7 +37,6 @@ async function fetchChannelAvatarFromSearch(channelName: string): Promise<string
     const results = await ytubeNoApi.searchVideos(channelName, 3);
     if (!results) return '';
 
-    // Find the first result with a channelThumbnail (same channel or close match)
     const match = results.find((v: any) =>
       v.channelThumbnail &&
       (v.channelName?.toLowerCase() === channelName.toLowerCase())
@@ -52,37 +44,28 @@ async function fetchChannelAvatarFromSearch(channelName: string): Promise<string
 
     if (match?.channelThumbnail) {
       avatarCache.set(channelName, match.channelThumbnail);
-      // Also cache by any alternate channel name spelling
       if (match.channelName && match.channelName !== channelName) {
         avatarCache.set(match.channelName, match.channelThumbnail);
       }
       return match.channelThumbnail;
     }
   } catch {
-    // Search failed silently
+    // silent
   }
 
   return '';
 }
 
-/**
- * Ensure we have a real channel avatar URL.
- * Uses ytube-noapi search (homepage method) if the current avatar is missing/invalid.
- */
 async function ensureChannelAvatar(channelName: string, currentAvatar: string): Promise<string> {
-  // Already have a valid-looking URL
   if (currentAvatar && currentAvatar.startsWith('http')) return currentAvatar;
-
-  // Try ytube-noapi search (same method as homepage)
   return fetchChannelAvatarFromSearch(channelName) || currentAvatar;
 }
 
 export async function getVideoDetails(id: string, lang?: string, location?: string): Promise<VideoDetail | null> {
-  // 1. Try Piped/Invidious API (pure fetch, no native deps, works on Vercel)
+  // 1. YouTube Data API v3 (most reliable — needs YOUTUBE_API_KEY env var)
   try {
     const apiResult = await getVideoDetailsFromAPI(id);
     if (apiResult) {
-      // Ensure we have a real channel avatar
       if (!apiResult.channelAvatar || !apiResult.channelAvatar.startsWith('http')) {
         apiResult.channelAvatar = await ensureChannelAvatar(apiResult.channelName, apiResult.channelAvatar);
       }
@@ -92,7 +75,7 @@ export async function getVideoDetails(id: string, lang?: string, location?: stri
     // API detail failed
   }
 
-  // 2. Try youtube-sr (npm package)
+  // 2. youtube-sr
   try {
     const video = await YouTubeSR.getVideo(`https://www.youtube.com/watch?v=${id}`);
     if (video && video.title) {
@@ -118,11 +101,11 @@ export async function getVideoDetails(id: string, lang?: string, location?: stri
         comments: [],
       };
     }
-  } catch (error) {
-    // youtube-sr detail failed
+  } catch {
+    // youtube-sr failed
   }
 
-  // 3. Fallback to youtube-search-api
+  // 3. youtube-search-api
   try {
     const result = await youtubeSearchApi.GetVideoDetails(id);
     if (result && result.title) {
@@ -148,11 +131,11 @@ export async function getVideoDetails(id: string, lang?: string, location?: stri
         comments: [],
       };
     }
-  } catch (error) {
-    // youtube-search-api detail failed
+  } catch {
+    // youtube-search-api failed
   }
 
-  // 4. Try ytube-noapi
+  // 4. ytube-noapi
   try {
     const video = await ytubeNoApi.getVideo(id);
     if (video && video.title && video.title !== 'Unknown') {
@@ -178,8 +161,8 @@ export async function getVideoDetails(id: string, lang?: string, location?: stri
         comments: [],
       };
     }
-  } catch (error) {
-    // ytube-noapi detail failed
+  } catch {
+    // ytube-noapi failed
   }
 
   return null;
