@@ -89,6 +89,7 @@ export default function WatchClient({
   const [showDescription, setShowDescription] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isWatchLocked, setIsWatchLocked] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [theaterMode, setTheaterMode] = useState(false);
@@ -276,8 +277,8 @@ export default function WatchClient({
 
   return (
     <div className="min-h-screen bg-background" dir={direction}>
-      <Masthead onSearch={handleSearch} />
-      <SidebarGuide forceOverlay={true} />
+      <Masthead onMenuClick={() => setSidebarOpen(!sidebarOpen)} onSearch={handleSearch} />
+      <SidebarGuide isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} forceOverlay={true} />
 
       {/* ─── Top Progress Bar ─── */}
       <div className="fixed top-0 left-0 right-0 z-[100] h-[3px] bg-transparent pointer-events-none">

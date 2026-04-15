@@ -43,7 +43,8 @@ export default function NotesPage() {
   const { getAllNotes, deleteNote, updateNote, isLoaded } = useNotes();
   const { showGregorianDate, showHijriDate, hijriOffset, language, direction, t } = useI18n();
   const mainPaddingTop = useTopPadding();
-  const { marginClass } = useSidebarLayout();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { marginClass } = useSidebarLayout(sidebarOpen);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [editingNote, setEditingNote] = useState<string | null>(null);
@@ -236,8 +237,8 @@ export default function NotesPage() {
 
   return (
     <div className="min-h-screen bg-[#fcfcfc] text-[#0f0f0f]" dir={direction}>
-      <Masthead />
-      <SidebarGuide />
+      <Masthead onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+      <SidebarGuide isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       <main className={`ms-0 lg:ms-[240px] ${mainPaddingTop} pb-24 px-4 md:px-8 transition-all duration-300`}>
         <div className="max-w-5xl mx-auto">

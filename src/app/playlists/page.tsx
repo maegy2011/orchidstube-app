@@ -36,8 +36,9 @@ import { Input } from "@/components/ui/input";
 export default function PlaylistsPage() {
   const { t, direction, language } = useI18n();
   const { playlists, isLoaded, deletePlaylist, updatePlaylist } = usePlaylists();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const mainPaddingTop = useTopPadding();
-  const { marginClass } = useSidebarLayout();
+  const { marginClass } = useSidebarLayout(sidebarOpen);
 
   // Delete dialog state
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
@@ -47,6 +48,12 @@ export default function PlaylistsPage() {
   const [renameTarget, setRenameTarget] = useState<Playlist | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const renameInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (window.innerWidth >= 1200) {
+      setSidebarOpen(true);
+    }
+  }, []);
 
   // Auto-focus rename input
   useEffect(() => {
@@ -112,8 +119,8 @@ export default function PlaylistsPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground" dir={direction}>
-      <Masthead />
-      <SidebarGuide />
+      <Masthead onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+      <SidebarGuide isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <main
         className={`${marginClass} ${mainPaddingTop} pb-24 px-4 md:px-8 transition-all duration-300 ease-in-out`}

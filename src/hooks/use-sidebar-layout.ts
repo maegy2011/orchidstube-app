@@ -1,21 +1,16 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n-context";
-import { useSidebarStore } from "@/lib/sidebar-store";
 import { useEffect, useState, useMemo } from "react";
 
 const DESKTOP_BREAKPOINT = 1024;
 const FULL_WIDTH = 240;
 const MINI_WIDTH = 72;
 
-export function useSidebarLayout(isOpenProp?: boolean) {
+export function useSidebarLayout(isOpen: boolean) {
   const { direction, sidebarMode } = useI18n();
   const [mounted, setMounted] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
-  const globalIsOpen = useSidebarStore((s) => s.isOpen);
-
-  // Use global store by default, fall back to prop
-  const isOpen = isOpenProp !== undefined ? isOpenProp : globalIsOpen;
 
   useEffect(() => {
     setMounted(true);

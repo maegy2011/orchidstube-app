@@ -24,9 +24,10 @@ function formatDate(dateString: string, locale: string): string {
 export default function WatchLaterPage() {
   const { getAllWatchLater, removeFromWatchLater, isLoaded } = useWatchLater();
   const [searchQuery, setSearchQuery] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { t, language, direction } = useI18n();
   const mainPaddingTop = useTopPadding();
-  const { marginClass } = useSidebarLayout();
+  const { marginClass } = useSidebarLayout(sidebarOpen);
 
   const allWatchLater = isLoaded ? getAllWatchLater() : [];
   
@@ -60,8 +61,8 @@ export default function WatchLaterPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground" dir={direction}>
-      <Masthead />
-      <SidebarGuide />
+      <Masthead onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+      <SidebarGuide isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       <main className={cn(
         marginClass, mainPaddingTop, "pb-24 px-4 md:px-8 transition-all duration-300"

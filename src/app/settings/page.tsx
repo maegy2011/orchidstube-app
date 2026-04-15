@@ -31,7 +31,8 @@ import DataManagementSection from "./components/DataManagementSection";
 export default function SettingsPage() {
   const router = useRouter();
   const mainPaddingTop = useTopPadding();
-  const { marginClass, mounted } = useSidebarLayout();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { marginClass, mounted } = useSidebarLayout(sidebarOpen);
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const { setTheme, theme: savedTheme } = useTheme();
@@ -299,8 +300,10 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground" dir={direction}>
-      <Masthead />
-      <SidebarGuide />
+      <Masthead
+        onMenuClick={() => setSidebarOpen(!sidebarOpen)}
+      />
+      <SidebarGuide isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <main className={`${marginClass} ${mainPaddingTop} p-4 lg:p-8 transition-all duration-300`}>
         <div className="max-w-4xl mx-auto">

@@ -11,6 +11,7 @@ import { useI18n } from "@/lib/i18n-context";
 import { useTopPadding } from "@/hooks/use-top-padding";
 
 export default function FeedbackPage() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -36,8 +37,10 @@ export default function FeedbackPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground" dir={direction}>
-      <Masthead />
-      <SidebarGuide />
+      <Masthead 
+        onMenuClick={() => setSidebarOpen(!sidebarOpen)} 
+      />
+      <SidebarGuide isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       <main className={`ms-0 lg:ms-[240px] ${mainPaddingTop} flex flex-col min-h-screen transition-all duration-300`}>
         <div className="bg-red-600 p-4 text-white">

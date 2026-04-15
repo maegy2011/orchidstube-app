@@ -15,6 +15,7 @@ import ShortsVideo, { type ShortVideo, type ShortsPlayerHandle } from './compone
 import ShortsFeed from './components/ShortsFeed';
 
 export default function ShortsPage() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { direction, t, showRamadanCountdown, language } = useI18n();
   const { prayerEnabled, nextPrayer } = usePrayer();
   const [daysUntilRamadan, setDaysUntilRamadan] = useState<number | null>(null);
@@ -255,6 +256,7 @@ export default function ShortsPage() {
         offset={offset}
         direction={direction}
         onRetry={fetchShorts}
+        onMenuClick={() => setSidebarOpen(!sidebarOpen)}
         Masthead={Masthead}
         t={t}
       />
@@ -271,6 +273,7 @@ export default function ShortsPage() {
         offset={offset}
         direction={direction}
         onRetry={fetchShorts}
+        onMenuClick={() => setSidebarOpen(!sidebarOpen)}
         Masthead={Masthead}
         t={t}
       />
@@ -287,6 +290,7 @@ export default function ShortsPage() {
         offset={offset}
         direction={direction}
         onRetry={fetchShorts}
+        onMenuClick={() => setSidebarOpen(!sidebarOpen)}
         Masthead={Masthead}
         t={t}
       />
@@ -297,8 +301,8 @@ export default function ShortsPage() {
 
   return (
     <div className="h-screen bg-black overflow-hidden flex flex-col" dir={direction}>
-      <Masthead />
-      <SidebarGuide forceOverlay={true} />
+      <Masthead onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+      <SidebarGuide isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} forceOverlay={true} />
 
       <ShortsFeed
         ptClass={ptClass}

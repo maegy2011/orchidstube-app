@@ -1,2 +1,1 @@
-declare module 'yt-search';
-declare module 'youtube-po-token-generator/lib/task';
+declare module 'youtube-video-element';

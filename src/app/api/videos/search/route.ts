@@ -1,4 +1,3 @@
-import 'cheerio';
 import { NextRequest, NextResponse } from 'next/server';
 import { searchVideosWithContinuation } from '@/lib/youtube';
 import { filterContent, loadFilterConfig } from '@/lib/content-filter';

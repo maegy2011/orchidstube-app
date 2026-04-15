@@ -70,9 +70,6 @@ const LS_DAILY_SHORTS = 'wb-daily-shorts-temp';
 const LS_DAILY_TIME = 'wb-daily-time';
 const LS_PIN_KEY = 'orchids-parental-pin-hash';
 
-/** How often (ms) to sync watch-time counters to the server */
-const SERVER_SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
-
 export function WellBeingProvider({ children }: { children: ReactNode }) {
   const { t } = useI18n();
   const { isAuthenticated } = useUser();
@@ -88,35 +85,6 @@ export function WellBeingProvider({ children }: { children: ReactNode }) {
 
   const { settings, isLoaded: settingsLoaded, setSetting, saveSettings } = useUserSettings();
 
-  // ─── Refs for dirty-tracking (avoid unnecessary server writes) ───
-  const dirtyShortsRef = useRef(false);
-  const dirtyTimeRef = useRef(false);
-  const shortsValueRef = useRef('');
-  const timeValueRef = useRef('');
-  const lastSyncRef = useRef(Date.now());
-
-  /** Flush dirty counters to server — only if values actually changed */
-  const syncToServer = useCallback(() => {
-    if (!isAuthenticated) return;
-    const toSend: Record<string, string> = {};
-    if (dirtyShortsRef.current && shortsValueRef.current) {
-      toSend['wb-daily-shorts-temp'] = shortsValueRef.current;
-      dirtyShortsRef.current = false;
-    }
-    if (dirtyTimeRef.current && timeValueRef.current) {
-      toSend['wb-daily-time'] = timeValueRef.current;
-      dirtyTimeRef.current = false;
-    }
-    if (Object.keys(toSend).length > 0) {
-      fetch('/api/user-settings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ settings: toSend }),
-      }).catch(() => {});
-    }
-    lastSyncRef.current = Date.now();
-  }, [isAuthenticated]);
-
   // ─── 1. Load limit settings from user preferences ───
   useEffect(() => {
     if (!settingsLoaded) return;
@@ -126,32 +94,30 @@ export function WellBeingProvider({ children }: { children: ReactNode }) {
     if (settings.wbBedtimeStart) setLimitsState(prev => ({ ...prev, bedtimeStart: settings.wbBedtimeStart }));
     if (settings.wbBedtimeEnd) setLimitsState(prev => ({ ...prev, bedtimeEnd: settings.wbBedtimeEnd }));
     if (settings.wbBedtimeEnabled !== undefined) setLimitsState(prev => ({ ...prev, bedtimeEnabled: settings.wbBedtimeEnabled === 'true' }));
-  }, [settingsLoaded]);
+  }, [settingsLoaded, settings]);
 
-  // ─── 2. Restore daily shorts count (runs ONCE) ───
+  // ─── 2. Restore daily shorts count ───
   useEffect(() => {
     if (!settingsLoaded) return;
     const todayKey = getTodayKey();
 
     if (isAuthenticated) {
+      // Authenticated: restore from userSettings (stored as JSON)
       try {
         const raw = settings['wb-daily-shorts-temp'];
         if (raw) {
           const parsed = JSON.parse(raw);
           if (parsed.date === todayKey && typeof parsed.count === 'number') {
             setDailyShortsCount(parsed.count);
-            shortsValueRef.current = raw;
             return;
           }
         }
       } catch {}
-      // Expired or missing — reset to 0
+      // Expired or missing — reset to 0 and persist
       const resetPayload = JSON.stringify({ date: todayKey, count: 0 });
-      shortsValueRef.current = resetPayload;
-      setDailyShortsCount(0);
-      // Mark dirty so it syncs on the next cycle (not immediately)
-      dirtyShortsRef.current = true;
+      setSetting('wb-daily-shorts-temp', resetPayload);
     } else {
+      // Unauthenticated: restore from localStorage
       try {
         const shortsData = localStorage.getItem(LS_DAILY_SHORTS);
         if (shortsData) {
@@ -164,9 +130,9 @@ export function WellBeingProvider({ children }: { children: ReactNode }) {
       } catch {}
       try { localStorage.setItem(LS_DAILY_SHORTS, JSON.stringify({ date: todayKey, count: 0 })); } catch {}
     }
-  }, [settingsLoaded, isAuthenticated]);
+  }, [settingsLoaded, isAuthenticated, settings, setSetting]);
 
-  // ─── 3. Restore daily watch time (runs ONCE) ───
+  // ─── 3. Restore daily watch time ───
   useEffect(() => {
     if (!settingsLoaded) return;
     const todayKey = getTodayKey();
@@ -178,16 +144,12 @@ export function WellBeingProvider({ children }: { children: ReactNode }) {
           const parsed = JSON.parse(raw);
           if (parsed.date === todayKey && typeof parsed.minutes === 'number') {
             setDailyWatchTime(parsed.minutes);
-            timeValueRef.current = raw;
             return;
           }
         }
       } catch {}
-      // Expired or missing — reset to 0
       const resetPayload = JSON.stringify({ date: todayKey, minutes: 0 });
-      timeValueRef.current = resetPayload;
-      setDailyWatchTime(0);
-      dirtyTimeRef.current = true;
+      setSetting('wb-daily-time', resetPayload);
     } else {
       try {
         const timeData = localStorage.getItem(LS_DAILY_TIME);
@@ -201,13 +163,14 @@ export function WellBeingProvider({ children }: { children: ReactNode }) {
       } catch {}
       try { localStorage.setItem(LS_DAILY_TIME, JSON.stringify({ date: todayKey, minutes: 0 })); } catch {}
     }
-  }, [settingsLoaded, isAuthenticated]);
+  }, [settingsLoaded, isAuthenticated, settings, setSetting]);
 
-  // ─── 4. Restore parental PIN (runs ONCE) ───
+  // ─── 4. Restore parental PIN ───
   useEffect(() => {
     if (!settingsLoaded) return;
 
     if (isAuthenticated) {
+      // Authenticated: load from userSettings
       const hash = settings.parentalPinHash;
       if (hash) {
         pinHashRef.current = hash;
@@ -217,6 +180,7 @@ export function WellBeingProvider({ children }: { children: ReactNode }) {
         setHasPinSet(false);
       }
     } else {
+      // Unauthenticated: load from localStorage
       try {
         const hash = localStorage.getItem(LS_PIN_KEY);
         pinHashRef.current = hash;
@@ -226,7 +190,7 @@ export function WellBeingProvider({ children }: { children: ReactNode }) {
         setHasPinSet(false);
       }
     }
-  }, [settingsLoaded, isAuthenticated]);
+  }, [settingsLoaded, isAuthenticated, settings]);
 
   // ─── 5. Mark ready after restore + short delay ───
   useEffect(() => {
@@ -235,42 +199,7 @@ export function WellBeingProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(t);
   }, [settingsLoaded]);
 
-  // ─── 6. Periodic server sync (every 5 minutes) ───
-  useEffect(() => {
-    const interval = setInterval(syncToServer, SERVER_SYNC_INTERVAL);
-    return () => clearInterval(interval);
-  }, [syncToServer]);
-
-  // ─── 7. Sync on tab close / visibility change ───
-  useEffect(() => {
-    const handleVisibility = () => {
-      if (document.visibilityState === 'hidden') {
-        syncToServer();
-      }
-    };
-    const handleBeforeUnload = () => {
-      // Use sendBeacon for reliable fire-and-forget
-      if (!isAuthenticated) return;
-      const toSend: Record<string, string> = {};
-      if (dirtyShortsRef.current && shortsValueRef.current) {
-        toSend['wb-daily-shorts-temp'] = shortsValueRef.current;
-      }
-      if (dirtyTimeRef.current && timeValueRef.current) {
-        toSend['wb-daily-time'] = timeValueRef.current;
-      }
-      if (Object.keys(toSend).length > 0) {
-        navigator.sendBeacon('/api/user-settings', JSON.stringify({ settings: toSend }));
-      }
-    };
-    document.addEventListener('visibilitychange', handleVisibility);
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibility);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [isAuthenticated]);
-
-  // ─── 8. Midnight auto-reset (checks once per minute) ───
+  // ─── 6. Midnight auto-reset (checks once per minute) ───
   useEffect(() => {
     let lastDay = getTodayKey();
     const interval = setInterval(() => {
@@ -280,50 +209,48 @@ export function WellBeingProvider({ children }: { children: ReactNode }) {
         setDailyShortsCount(0);
         setDailyWatchTime(0);
 
-        const shortsReset = JSON.stringify({ date: today, count: 0 });
-        const timeReset = JSON.stringify({ date: today, minutes: 0 });
-        shortsValueRef.current = shortsReset;
-        timeValueRef.current = timeReset;
-
         if (isAuthenticated) {
-          dirtyShortsRef.current = true;
-          dirtyTimeRef.current = true;
-          syncToServer(); // Immediate sync for midnight reset
+          const shortsReset = JSON.stringify({ date: today, count: 0 });
+          const timeReset = JSON.stringify({ date: today, minutes: 0 });
+          setSetting('wb-daily-shorts-temp', shortsReset);
+          setSetting('wb-daily-time', timeReset);
         } else {
           try {
-            localStorage.setItem(LS_DAILY_SHORTS, shortsReset);
-            localStorage.setItem(LS_DAILY_TIME, timeReset);
+            localStorage.setItem(LS_DAILY_SHORTS, JSON.stringify({ date: today, count: 0 }));
+            localStorage.setItem(LS_DAILY_TIME, JSON.stringify({ date: today, minutes: 0 }));
           } catch {}
         }
       }
     }, 60000);
     return () => clearInterval(interval);
-  }, [isAuthenticated, syncToServer]);
+  }, [isAuthenticated, setSetting]);
 
-  // ─── 9. Track watch time locally every minute (NO server call) ───
+  // ─── 7. Track watch time (disabled in incognito mode) ───
   useEffect(() => {
-    if (isIncognito) return;
+    if (isIncognito) return; // No tracking in incognito mode
     const interval = setInterval(() => {
       const now = new Date();
       if (now.getMinutes() !== lastTrackedMinuteRef.current) {
         lastTrackedMinuteRef.current = now.getMinutes();
         setDailyWatchTime(prev => {
           const newVal = prev + 1;
-          const payload = JSON.stringify({ date: getTodayKey(), minutes: newVal });
-          timeValueRef.current = payload;
-          dirtyTimeRef.current = true;
 
-          if (!isAuthenticated) {
-            try { localStorage.setItem(LS_DAILY_TIME, payload); } catch {}
+          if (isAuthenticated) {
+            const payload = JSON.stringify({ date: getTodayKey(), minutes: newVal });
+            setSetting('wb-daily-time', payload);
+          } else {
+            try {
+              localStorage.setItem(LS_DAILY_TIME, JSON.stringify({ date: getTodayKey(), minutes: newVal }));
+            } catch {}
           }
-          // DO NOT call setSetting here — synced by periodic sync (every 5 min)
+
           return newVal;
         });
         setContinuousWatchTime(prev => prev + 1);
       }
     }, 10000);
     return () => clearInterval(interval);
-  }, [isAuthenticated, isIncognito]);
+  }, [isAuthenticated, setSetting, isIncognito]);
 
   const setLimits = (newLimits: WellBeingLimits) => {
     setLimitsState(newLimits);
@@ -338,28 +265,22 @@ export function WellBeingProvider({ children }: { children: ReactNode }) {
   };
 
   const incrementShortsCount = useCallback(() => {
-    if (isIncognito) return;
+    if (isIncognito) return; // No tracking in incognito mode
     setDailyShortsCount(prev => {
       const newVal = prev + 1;
-      const payload = JSON.stringify({ date: getTodayKey(), count: newVal });
-      shortsValueRef.current = payload;
-      dirtyShortsRef.current = true;
 
       if (isAuthenticated) {
-        // Sync shorts count immediately (user action, not background)
-        fetch('/api/user-settings', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ settings: { 'wb-daily-shorts-temp': payload } }),
-        }).catch(() => {});
-        dirtyShortsRef.current = false;
+        const payload = JSON.stringify({ date: getTodayKey(), count: newVal });
+        setSetting('wb-daily-shorts-temp', payload);
       } else {
-        try { localStorage.setItem(LS_DAILY_SHORTS, payload); } catch {}
+        try {
+          localStorage.setItem(LS_DAILY_SHORTS, JSON.stringify({ date: getTodayKey(), count: newVal }));
+        } catch {}
       }
 
       return newVal;
     });
-  }, [isAuthenticated, isIncognito]);
+  }, [isAuthenticated, setSetting, isIncognito]);
 
   const resetContinuousTime = useCallback(() => {
     setContinuousWatchTime(0);

@@ -27,7 +27,8 @@ export default function HistoryPage() {
   const isAuthenticated = status === "authenticated";
   const { t, language, direction, showGregorianDate, showHijriDate, hijriOffset, sidebarMode } = useI18n();
   const [daysUntilRamadan, setDaysUntilRamadan] = useState<number | null>(null);
-    const { marginClass } = useSidebarLayout();
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const { marginClass } = useSidebarLayout(sidebarOpen);
     const mainPaddingTop = useTopPadding();
 
     const formatDate = (dateString: string): string => {
@@ -108,8 +109,8 @@ export default function HistoryPage() {
 
   return (
     <div className="min-h-screen bg-background" dir={direction}>
-      <Masthead />
-      <SidebarGuide />
+      <Masthead onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+      <SidebarGuide isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       <main className={`${marginClass} ${mainPaddingTop} pb-24 px-4 md:px-8 transition-all duration-300 ease-in-out`}>
         <div className="max-w-5xl mx-auto">

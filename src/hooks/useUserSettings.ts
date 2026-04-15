@@ -113,9 +113,6 @@ export function useUserSettings() {
 
   const setSetting = useCallback((key: string, value: string) => {
     setSettingsState(prev => {
-      // Skip if value hasn't actually changed
-      if (prev[key] === value) return prev;
-
       const updated = { ...prev, [key]: value };
       // Always persist to localStorage so synchronous reads on reload
       // (getInitialSettings, loadLocalSettings) return correct values.
@@ -123,7 +120,7 @@ export function useUserSettings() {
       if (isAuthenticated && userId) {
         pendingSettings.current[key] = value;
         if (flushTimer.current) clearTimeout(flushTimer.current);
-        flushTimer.current = setTimeout(flushPendingSettings, 500);
+        flushTimer.current = setTimeout(flushPendingSettings, 300);
       }
       return updated;
     });
@@ -132,22 +129,17 @@ export function useUserSettings() {
   const saveSettings = useCallback((newSettings: Partial<UserSettings>) => {
     setSettingsState((prev: UserSettings) => {
       const updated: UserSettings = { ...prev };
-      let hasChanges = false;
       for (const [k, v] of Object.entries(newSettings)) {
-        if (v !== undefined && updated[k] !== v) {
-          updated[k] = v;
-          hasChanges = true;
-        }
+        if (v !== undefined) updated[k] = v;
       }
-      if (!hasChanges) return prev;
-
-      // Always persist to localStorage
+      // Always persist to localStorage so synchronous reads on reload
+      // (getInitialSettings, loadLocalSettings) return correct values.
       saveLocalSettings(updated);
       if (isAuthenticated && userId) {
         const filtered = Object.fromEntries(Object.entries(newSettings).filter(([, v]) => v !== undefined)) as Record<string, string>;
         pendingSettings.current = { ...pendingSettings.current, ...filtered };
         if (flushTimer.current) clearTimeout(flushTimer.current);
-        flushTimer.current = setTimeout(flushPendingSettings, 500);
+        flushTimer.current = setTimeout(flushPendingSettings, 300);
       }
       return updated;
     });

@@ -122,6 +122,7 @@ export default function PlaylistDetailPage() {
   } = usePlaylists();
   const { playPlaylist } = usePlaylistQueue();
 
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [serverItems, setServerItems] = useState<PlaylistItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -138,13 +139,19 @@ export default function PlaylistDetailPage() {
   const [autoPlay, setAutoPlay] = useState(true);
 
   const mainPaddingTop = useTopPadding();
-  const { marginClass } = useSidebarLayout();
+  const { marginClass } = useSidebarLayout(sidebarOpen);
 
   // Find playlist from the hook's list
   const playlist = playlists.find((p) => p.id === playlistId);
 
   // For unauthenticated users, items come from localStorage via usePlaylists hook
   const items = isAuthenticated ? serverItems : (itemsMap[playlistId] || []);
+
+  useEffect(() => {
+    if (window.innerWidth >= 1200) {
+      setSidebarOpen(true);
+    }
+  }, []);
 
   // Fetch playlist items on mount (authenticated users only)
   useEffect(() => {
@@ -285,8 +292,8 @@ export default function PlaylistDetailPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground" dir={direction}>
-      <Masthead />
-      <SidebarGuide />
+      <Masthead onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+      <SidebarGuide isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <main
         className={`${marginClass} ${mainPaddingTop} pb-24 px-4 md:px-8 transition-all duration-300 ease-in-out`}

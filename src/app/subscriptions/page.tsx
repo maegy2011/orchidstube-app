@@ -42,13 +42,22 @@ interface Subscription {
 export default function SubscriptionsPage() {
   const { data: session, status } = useSession();
   const isAuthenticated = status === "authenticated";
-  const { t, direction } = useI18n();
+  const { t, sidebarMode, direction } = useI18n();
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const mainPaddingTop = useTopPadding();
 
-  const { marginClass } = useSidebarLayout();
+  const { marginClass } = useSidebarLayout(sidebarOpen);
+
+  useEffect(() => {
+    if (window.innerWidth >= 1200) {
+      if (sidebarMode === 'expanded') setSidebarOpen(false);
+      else if (sidebarMode === 'collapsed') setSidebarOpen(false);
+      else if (sidebarMode === 'hidden') setSidebarOpen(false);
+    }
+  }, [sidebarMode]);
 
   const fetchSubscriptions = async () => {
     if (!isAuthenticated) return;
@@ -125,8 +134,8 @@ export default function SubscriptionsPage() {
 
   return (
     <div className="min-h-screen bg-background" dir={direction}>
-      <Masthead />
-      <SidebarGuide />
+      <Masthead onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+      <SidebarGuide isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       <main className={`${marginClass} ${mainPaddingTop} pb-24 px-4 md:px-8 lg:px-12 transition-all duration-300 ease-in-out`}>
         <div className="max-w-6xl mx-auto">

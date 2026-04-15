@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Masthead from "@/components/sections/masthead";
 import SidebarGuide from "@/components/sections/sidebar-guide";
 import { Search, ChevronRight, Play, User, Shield, CreditCard, MessageCircle, Headphones, MessageSquarePlus, HelpCircle } from "lucide-react";
@@ -10,11 +10,12 @@ import { useSidebarLayout } from "@/hooks/use-sidebar-layout";
 import { useTopPadding } from "@/hooks/use-top-padding";
 
 export default function HelpPage() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { t, direction } = useI18n();
   const mainPaddingTop = useTopPadding();
 
-  const { marginClass } = useSidebarLayout();
+  const { marginClass } = useSidebarLayout(sidebarOpen);
 
   const topics = [
     { icon: Play, title: t('helpTopicPlay'), desc: t('helpTopicPlayDesc') },
@@ -25,8 +26,10 @@ export default function HelpPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground" dir={direction}>
-      <Masthead />
-      <SidebarGuide />
+      <Masthead 
+        onMenuClick={() => setSidebarOpen(!sidebarOpen)} 
+      />
+      <SidebarGuide isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
         <main className={`${marginClass} ${mainPaddingTop} transition-all duration-300`}>
           {/* Header Navigation */}

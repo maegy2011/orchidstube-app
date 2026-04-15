@@ -19,6 +19,7 @@ interface Message {
 
 export default function SupportPage() {
   const [mounted, setMounted] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -93,8 +94,10 @@ export default function SupportPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col" dir={direction}>
-      <Masthead />
-      <SidebarGuide />
+      <Masthead 
+        onMenuClick={() => setSidebarOpen(!sidebarOpen)} 
+      />
+      <SidebarGuide isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       <main className={`flex-1 ms-0 lg:ms-[240px] pt-[64px] flex flex-col h-[calc(100vh-64px)] overflow-hidden transition-all duration-300`}>
         <div className={`flex-1 max-w-4xl w-full mx-auto flex flex-col bg-card shadow-xl lg:my-6 lg:rounded-3xl overflow-hidden border border-border ${mainPaddingTop}`}>

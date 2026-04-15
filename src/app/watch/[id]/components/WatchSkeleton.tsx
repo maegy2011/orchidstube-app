@@ -13,7 +13,7 @@ interface WatchSkeletonProps {
 export default function WatchSkeleton({ direction, mainPaddingTop, onSearch }: WatchSkeletonProps) {
   return (
     <div className="min-h-screen bg-background" dir={direction}>
-      <Masthead onSearch={onSearch} />
+      <Masthead onMenuClick={() => {}} onSearch={onSearch} />
       <main className={`${mainPaddingTop} px-4 lg:px-6 xl:px-24 pb-16`}>
         <div className="max-w-[1800px] mx-auto flex flex-col lg:flex-row gap-6">
           {/* Skeleton: Left column */}

@@ -26,7 +26,6 @@ import {
   NAV_SECTIONS,
   type NavItem,
 } from "./sidebar/sidebarData";
-import { useSidebarStore } from "@/lib/sidebar-store";
 
 // ═══════════════════════════════════════════════════════
 // Section Header Component
@@ -103,8 +102,8 @@ interface SidebarGuideProps {
 }
 
 export default function SidebarGuide({
-  isOpen: isOpenProp,
-  onClose: onCloseProp,
+  isOpen = false,
+  onClose,
   forceOverlay = false,
 }: SidebarGuideProps) {
   const pathname = usePathname();
@@ -116,14 +115,6 @@ export default function SidebarGuide({
   const [isDesktop, setIsDesktop] = useState(false);
   const [isSm, setIsSm] = useState(false);
   const [daysUntilRamadan, setDaysUntilRamadan] = useState<number | null>(null);
-
-  // ─── Global sidebar store ───
-  const globalIsOpen = useSidebarStore((s) => s.isOpen);
-  const globalClose = useSidebarStore((s) => s.close);
-
-  // Use global store state, fall back to props for backward compatibility
-  const isOpen = isOpenProp !== undefined ? isOpenProp : globalIsOpen;
-  const onClose = onCloseProp || globalClose;
 
   // ─── Section collapse state (persisted) ───
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
@@ -180,10 +171,10 @@ export default function SidebarGuide({
       } else {
         router.push("/");
       }
-      // Close sidebar
-      globalClose();
+      // Close sidebar if overlay
+      if (onClose) onClose();
     },
-    [pathname, router, globalClose]
+    [pathname, router, onClose]
   );
 
   // ─── Compute top offset ───
@@ -276,20 +267,20 @@ export default function SidebarGuide({
 
   // ─── Close on navigation (mobile/overlay) ───
   const handleClose = useCallback(() => {
-    if (isOverlay) {
-      globalClose();
+    if (isOverlay && onClose) {
+      onClose();
     }
-  }, [isOverlay, globalClose]);
+  }, [isOverlay, onClose]);
 
   // Auto-close mobile mini sidebar after 5s
   useEffect(() => {
     if (isCollapsed && isOverlay && isOpen) {
       const timer = setTimeout(() => {
-        globalClose();
+        onClose?.();
       }, 5000);
       return () => clearTimeout(timer);
     }
-  }, [isCollapsed, isOverlay, isOpen, globalClose]);
+  }, [isCollapsed, isOverlay, isOpen, onClose]);
 
   // ─── Sidebar slide animation variant ───
   const sidebarVariants = useMemo(() => {

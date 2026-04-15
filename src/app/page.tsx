@@ -16,13 +16,14 @@ import { useTopPadding } from "@/hooks/use-top-padding";
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isGridLoading, setIsGridLoading] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const { direction, t, videosPerPage } = useI18n();
   const { isIncognito } = useIncognito();
   const mainPaddingTop = useTopPadding();
-  const { marginClass } = useSidebarLayout();
+  const { marginClass } = useSidebarLayout(sidebarOpen);
 
   // Detect if user is actively searching (hide featured/trending)
   useEffect(() => {
@@ -175,9 +176,10 @@ export default function Home() {
       <Masthead
         searchQuery={searchQuery}
         onSearch={handleSearch}
+        onMenuClick={() => setSidebarOpen(!sidebarOpen)}
         externalLoading={isGridLoading}
       />
-      <SidebarGuide />
+      <SidebarGuide isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <main
         className={`${marginClass} ${mainPaddingTop} transition-all duration-300 ease-in-out flex-1`}

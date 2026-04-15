@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Heart, Play, Trash2, Search, ArrowRight, X, Calendar, Video, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -26,9 +26,16 @@ export default function FavoritesPage() {
   const { getAllFavorites, removeFavorite, isLoaded } = useFavorites();
   const { t, direction, language } = useI18n();
   const [searchQuery, setSearchQuery] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const mainPaddingTop = useTopPadding();
 
-  const { marginClass } = useSidebarLayout();
+  const { marginClass } = useSidebarLayout(sidebarOpen);
+
+  useEffect(() => {
+    if (window.innerWidth >= 1200) {
+      setSidebarOpen(true);
+    }
+  }, []);
 
   const allFavorites = isLoaded ? getAllFavorites() : [];
   
@@ -62,8 +69,8 @@ export default function FavoritesPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground" dir={direction}>
-      <Masthead />
-      <SidebarGuide />
+      <Masthead onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+      <SidebarGuide isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       <main className={`${marginClass} ${mainPaddingTop} pb-24 px-4 md:px-8 transition-all duration-300 ease-in-out`}>
         <div className="max-w-7xl mx-auto">

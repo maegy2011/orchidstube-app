@@ -10,7 +10,8 @@ interface ShortsEmptyProps {
   offset: string;
   direction: string;
   onRetry: () => void;
-  Masthead: React.ComponentType<Record<string, unknown>>;
+  onMenuClick: () => void;
+  Masthead: React.ComponentType<{ onMenuClick: () => void }>;
   t: (key: string) => string;
 }
 
@@ -21,13 +22,14 @@ export default function ShortsEmpty({
   offset,
   direction,
   onRetry,
+  onMenuClick,
   Masthead,
   t,
 }: ShortsEmptyProps) {
   if (loading) {
     return (
       <div className="bg-black flex flex-col items-center justify-center gap-4" style={{ height: `calc(100vh - ${offset})`, marginTop: offset }} dir={direction}>
-        <Masthead />
+        <Masthead onMenuClick={onMenuClick} />
         <React.Suspense fallback={null}>
           <div className="w-10 h-10 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
         </React.Suspense>
@@ -39,7 +41,7 @@ export default function ShortsEmpty({
   if (limitEnforced) {
     return (
       <div className="h-screen bg-black flex flex-col items-center justify-center p-6 text-center" dir={direction}>
-        <Masthead />
+        <Masthead onMenuClick={onMenuClick} />
         <div className="max-w-sm space-y-5">
           <div className="flex justify-center">
             <div className="p-3.5 bg-primary/15 rounded-full">
@@ -62,7 +64,7 @@ export default function ShortsEmpty({
   if (error) {
     return (
       <div className="h-screen bg-black flex flex-col items-center justify-center p-6 text-center" dir={direction}>
-        <Masthead />
+        <Masthead onMenuClick={onMenuClick} />
         <div className="max-w-xs space-y-5">
           <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto">
             <Play className="w-7 h-7 text-white/20" />
