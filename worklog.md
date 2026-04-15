@@ -1670,3 +1670,26 @@ Stage Summary:
 - No native dependencies — works perfectly on Vercel serverless
 - Removed 5 problematic packages from the project
 - getVideoDetails also rewritten to use Piped/Invidious APIs
+---
+Task ID: 8
+Agent: Main Agent
+Task: Vercel deployment — final build verification (no Piped/Invidious/yt-search/cheerio)
+
+Work Log:
+- Verified youtube-search.ts uses 6 clean fallback sources: YouTube Data API v3, Direct HTML scrape (no cheerio), youtube-sr, youtube-search-api, youtube-search-without-api-key, ytube-noapi
+- Verified youtube-details.ts uses 4 fallback sources: YouTube Data API v3, youtube-sr, youtube-search-api, ytube-noapi
+- Verified zero references to Piped API, Invidious API, yt-search, or cheerio in codebase
+- Fixed proxy.ts conflict: both middleware.ts and proxy.ts existed → removed middleware.ts (Next.js 16 uses proxy.ts)
+- Generated Prisma client (needed to temporarily move .config JuiceFS file)
+- Ran full production build: 47 static pages, 30+ API routes, zero errors
+- Ran ESLint: 0 errors
+- Verified menu button ☰ is correctly wired on all 15+ pages (all pass onMenuClick)
+- Verified supplementChannelAvatar() no longer exists — replaced by ensureChannelAvatar/fetchChannelAvatarFromSearch
+
+Stage Summary:
+- Build succeeds with zero errors on Vercel-compatible stack
+- Search system: 6 pure-fetch fallback sources, no native dependencies, no cheerio
+- Video details: 4 pure-fetch fallback sources
+- proxy.ts replaces middleware.ts for Next.js 16
+- All pages correctly wire sidebar menu button
+- Dev server running cleanly
