@@ -1650,3 +1650,23 @@ Stage Summary:
 - All dialogs use proper shadcn/ui components (no more window.confirm/prompt)
 - All 320 i18n translations added across 10 languages
 - 0 lint errors, 0 compilation errors
+---
+Task ID: 1
+Agent: main
+Task: Complete rewrite of YouTube search to work on Vercel serverless
+
+Work Log:
+- Identified root cause: yt-search depends on cheerio (native deps) which fails on Vercel
+- Rewrote youtube-search.ts: now uses Piped API + Invidious API (pure fetch, no native deps)
+- Rewrote youtube-details.ts: removed yt-search, uses Piped/Invidious APIs as primary source
+- Simplified youtube.ts: removed youtubei.js Innertube (disabled anyway)
+- Removed packages: yt-search, cheerio, youtubei.js, jocles, youtube-po-token-generator
+- Updated next.config.ts: only 4 safe packages in serverExternalPackages
+- Verified autocomplete route still works (uses direct Google fetch)
+- All lint checks pass
+
+Stage Summary:
+- YouTube search now uses Piped API (primary) + Invidious API (fallback) — both are pure REST APIs
+- No native dependencies — works perfectly on Vercel serverless
+- Removed 5 problematic packages from the project
+- getVideoDetails also rewritten to use Piped/Invidious APIs

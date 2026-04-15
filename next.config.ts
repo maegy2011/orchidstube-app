@@ -4,14 +4,10 @@ const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: false,
   serverExternalPackages: [
-    'youtubei.js',
     'youtube-sr',
     'youtube-search-api',
     'youtube-search-without-api-key',
     'ytube-noapi',
-    'jocles',
-    'node-fetch',
-    'youtube-po-token-generator'
   ],
   images: {
     remotePatterns: [
